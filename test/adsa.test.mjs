@@ -408,7 +408,7 @@ describe("report", () => {
         assert.match(page, /<!doctype html>/);
         assert.doesNotMatch(page, /<script src=|<link rel="stylesheet"/);
         assert.match(page, new RegExp(`>${scored.total}<`));
-        assert.match(page, /From one designer to designers with love/);
+        assert.match(page, /From one designer to all designers, with love/);
         assert.match(page, /adsa fix /);
     });
 

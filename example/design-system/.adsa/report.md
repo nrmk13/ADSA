@@ -29,4 +29,4 @@ An agent will produce plausible, wrong UI here more often than not.
 
 ---
 
-*From one designer to designers with love <3*
+*From one designer to all designers, with love <3*
