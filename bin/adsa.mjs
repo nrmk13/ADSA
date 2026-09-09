@@ -259,7 +259,7 @@ function cmdEval(args, flags, out, json) {
             return result.invented.length ? 1 : 0;
         }
         out(`${result.project}`);
-        out(`  against ${result.system}: ${result.files} files, ${result.systemImports} imports from the system, ${result.used.length} distinct components used`);
+        out(`  against ${result.system} — ${plural(result.files, "file")}, ${plural(result.systemImports, "import")}, ${plural(result.used.length, "component")} used`);
         out(`  invented: ${result.invented.length ? red(String(result.invented.length)) : green("0")}`);
         for (const i of result.invented.slice(0, 12)) out(`    ${red(i.name)} — ${i.file} (from ${i.from})`);
         if (result.forbiddenImports.length) out(`  forbidden packages: ${[...new Set(result.forbiddenImports.map((f) => f.package))].join(", ")}`);
@@ -307,6 +307,11 @@ function cmdDocs(args, flags, out, json) {
     }
     out(body);
     return 0;
+}
+
+/** One file, not 1 files. The output is read by people. */
+function plural(n, word) {
+    return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
 
 /* --------------------------------------------------------------- doctor */
