@@ -13,6 +13,7 @@ import { findGuide, handleMessage, searchGuides, TOOLS } from "../lib/mcp.mjs";
 import { evaluate, taskFile } from "../lib/eval.mjs";
 import { badgeColor, badgeEndpoint, badgeMarkdown } from "../lib/badge.mjs";
 import { compare } from "../lib/history.mjs";
+import { byScore, detectColor, green, setColor } from "../lib/color.mjs";
 import { html, markdown } from "../lib/report.mjs";
 import { parseArgs, run } from "../bin/adsa.mjs";
 
@@ -257,6 +258,33 @@ describe("badge and history", () => {
         assert.equal(delta.delta, 4);
         assert.deepEqual(delta.moved, [{ id: "tokens", from: 1, to: 5 }]);
         assert.equal(compare(null, current), null);
+    });
+});
+
+describe("colour", () => {
+    it("is plain text unless something turns it on", () => {
+        assert.equal(green("ok"), "ok");
+        setColor(true);
+        assert.equal(green("ok"), "\u001b[32mok\u001b[39m");
+        assert.match(byScore(1, "x"), /\u001b\[31m/);
+        assert.match(byScore(3, "x"), /\u001b\[33m/);
+        assert.match(byScore(5, "x"), /\u001b\[32m/);
+        setColor(false);
+    });
+
+    it("stays off for pipes, NO_COLOR and dumb terminals", () => {
+        assert.equal(detectColor({ isTTY: true }, {}), true);
+        assert.equal(detectColor({ isTTY: false }, {}), false);
+        assert.equal(detectColor({ isTTY: true }, { NO_COLOR: "1" }), false);
+        assert.equal(detectColor({ isTTY: false }, { FORCE_COLOR: "1" }), true);
+        assert.equal(detectColor({ isTTY: true }, { TERM: "dumb" }), false);
+    });
+
+    it("writes no escapes into a captured run", async () => {
+        const dir = copyExample();
+        let text = "";
+        await run(["audit", dir], { stdout: { write: (s) => (text += s) } });
+        assert.doesNotMatch(text, /\u001b\[/);
     });
 });
 

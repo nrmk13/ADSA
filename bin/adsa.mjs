@@ -24,6 +24,7 @@ import { evaluate, taskFile } from "../lib/eval.mjs";
 import { findGuide, searchGuides, serve } from "../lib/mcp.mjs";
 import { dense } from "../lib/dense.mjs";
 import { readJson } from "../lib/fsx.mjs";
+import { byScore, detectColor, dim, green, red, setColor, yellow } from "../lib/color.mjs";
 
 const HELP = `adsa — agentic design system audit
 
@@ -50,6 +51,7 @@ Options
   --cwd <dir>                 fix: the repository to change (default: .)
   --quiet                     Only the score line
   --full                      docs: keep the prose
+  --color / --no-color        Force ANSI colour on or off (default: on for a terminal)
 `;
 
 export function parseArgs(argv) {
@@ -63,6 +65,8 @@ export function parseArgs(argv) {
         else if (arg === "--quiet") flags.quiet = true;
         else if (arg === "--list") flags.list = true;
         else if (arg === "--full") flags.full = true;
+        else if (arg === "--color") flags.color = true;
+        else if (arg === "--no-color") flags.color = false;
         else if (arg === "--all") flags.all = true;
         else if (arg === "--out") flags.out = argv[++i];
         else if (arg === "--min") flags.min = Number(argv[++i]);
@@ -94,6 +98,7 @@ export async function run(argv, io = {}) {
     const out = (s) => (io.stdout ?? process.stdout).write(s + "\n");
     const json = (v) => out(JSON.stringify(v, null, 2));
     const { command, args, flags } = parseArgs(argv);
+    if (flags.color !== undefined) setColor(flags.color);
     if (flags.help || !command) {
         out(HELP);
         return 0;
@@ -150,18 +155,24 @@ function cmdAudit(dir, flags, out, json) {
     if (flags.json) {
         json({ ...file, dimensions: scored.dimensions, delta });
     } else {
-        out(`${facts.name}${facts.version ? " " + facts.version : ""} — agent readiness ${scored.total}/${scored.max}`);
+        const band = scored.total / scored.max;
+        // Same bands the report uses, so the terminal and the HTML never disagree.
+        const paint = (t) => (band >= 0.85 ? green(t) : band >= 0.35 ? yellow(t) : red(t));
+        out(`${facts.name}${facts.version ? " " + facts.version : ""} — agent readiness ${paint(`${scored.total}/${scored.max}`)}`);
         if (facts.workspace) out(`  ${facts.workspace}`);
         if (!flags.quiet) {
             out("");
             for (const d of scored.dimensions) {
-                const bar = d.skipped ? "  skip" : "█".repeat(d.score) + "·".repeat(5 - d.score);
-                out(`  ${String(d.skipped ? "—" : d.score).padStart(2)}/5 ${bar}  ${d.title}`);
+                const bar = d.skipped ? dim("  skip") : byScore(d.score, "█".repeat(d.score)) + dim("·".repeat(5 - d.score));
+                out(`  ${String(d.skipped ? "—" : d.score).padStart(2)}/5 ${bar}  ${d.skipped ? dim(d.title) : d.title}`);
             }
             out("");
             const todo = scored.dimensions.flatMap((d) => d.fixes);
-            if (todo.length) out(`Next: ${[...new Set(todo)].slice(0, 3).map((f) => `adsa fix ${f}`).join(", ")}`);
-            if (delta) out(`Since the last run: ${delta.from} → ${delta.to} (${delta.delta >= 0 ? "+" : ""}${delta.delta})`);
+            if (todo.length) out(dim(`Next: ${[...new Set(todo)].slice(0, 3).map((f) => `adsa fix ${f}`).join(", ")}`));
+            if (delta) {
+                const move = `Since the last run: ${delta.from} → ${delta.to} (${delta.delta >= 0 ? "+" : ""}${delta.delta})`;
+                out(delta.delta > 0 ? green(move) : delta.delta < 0 ? red(move) : dim(move));
+            }
         }
     }
 
@@ -172,12 +183,12 @@ function cmdAudit(dir, flags, out, json) {
     mkdirSync(reportDir, { recursive: true });
     writeFileSync(join(reportDir, "report.html"), html(facts, scored, history));
     writeFileSync(join(reportDir, "report.md"), markdown(facts, scored));
-    if (!flags.json && !flags.quiet) out(`\nReport: ${join(outDir, "report.html")} · score: ${join(DIR, "score.json")}`);
+    if (!flags.json && !flags.quiet) out(dim(`\nReport: ${join(outDir, "report.html")} · score: ${join(DIR, "score.json")}`));
 
     if (flags.gate) {
         const floor = flags.min ?? config.minScore ?? (previous ? previous.total : null);
         if (floor != null && file.total < floor) {
-            out(`\nGate: ${file.total}/${file.max} is below ${floor}.`);
+            out(red(`\nGate: ${file.total}/${file.max} is below ${floor}.`));
             return 1;
         }
     }
@@ -249,12 +260,12 @@ function cmdEval(args, flags, out, json) {
         }
         out(`${result.project}`);
         out(`  against ${result.system}: ${result.files} files, ${result.systemImports} imports from the system, ${result.used.length} distinct components used`);
-        out(`  invented: ${result.invented.length}`);
-        for (const i of result.invented.slice(0, 12)) out(`    ${i.name} — ${i.file} (from ${i.from})`);
+        out(`  invented: ${result.invented.length ? red(String(result.invented.length)) : green("0")}`);
+        for (const i of result.invented.slice(0, 12)) out(`    ${red(i.name)} — ${i.file} (from ${i.from})`);
         if (result.forbiddenImports.length) out(`  forbidden packages: ${[...new Set(result.forbiddenImports.map((f) => f.package))].join(", ")}`);
         if (result.rawPalette.length) out(`  raw palette classes: ${result.rawPalette.length}, first ${result.rawPalette[0].value} at ${result.rawPalette[0].file}:${result.rawPalette[0].line}`);
         if (result.localUiFolder.length) out(`  local component folder: ${result.localUiFolder.join(", ")}`);
-        out(`\n  ${result.verdict}`);
+        out(`\n  ${result.invented.length ? result.verdict : green(result.verdict)}`);
         return result.invented.length ? 1 : 0;
     }
     out("Usage: adsa eval init | adsa eval score <dir>");
@@ -318,8 +329,9 @@ function cmdDoctor(dir, flags, out, json) {
         return ok ? 0 : 1;
     }
     for (const c of checks) {
-        out(`  ${c.status.toUpperCase().padEnd(4)} ${c.id.padEnd(11)} ${c.message}`);
-        if (c.fix) out(`       ${" ".repeat(11)} → ${c.fix}`);
+        const tint = c.status === "pass" ? green : c.status === "warn" ? yellow : red;
+        out(`  ${tint(c.status.toUpperCase().padEnd(4))} ${c.id.padEnd(11)} ${c.message}`);
+        if (c.fix) out(dim(`       ${" ".repeat(11)} → ${c.fix}`));
     }
     return ok ? 0 : 1;
 }
@@ -370,6 +382,7 @@ function isMain() {
 }
 
 if (isMain()) {
+    setColor(detectColor());
     run(process.argv.slice(2))
         .then((code) => process.exit(code))
         .catch((error) => {
