@@ -2,8 +2,6 @@
 
 # ADSA — agentic design system audit
 
-![Agent-ready 23/45](https://img.shields.io/badge/agent--ready-23%2F45-a2650b)
-
 Your design system is documented for people. An agent is not a person: it cannot ask
 a colleague, it cannot tell *this does not exist* from *I have not found it yet*, and
 when it cannot find something it invents a component and moves on, confidently.
@@ -29,8 +27,12 @@ verdict. Written to `.adsa/report.html`, `.adsa/report.md` and `.adsa/score.json
 files. Five write a task brief for your agent, because they need your repo's own
 stack and a generic codemod would do them badly.
 
-**A gate.** `.adsa/score.json` is committed. `adsa audit --gate` fails when the score
-drops, so documentation debt cannot land quietly next to a feature.
+**A gate, and a badge.** `.adsa/score.json` is committed and `adsa audit --gate`
+fails when the score drops, so documentation debt cannot land quietly next to a
+feature. `adsa badge` prints the README line for your own score — this is what the
+example system in this repo earns after its fixes:
+
+![Agent-ready 23/45](https://img.shields.io/badge/agent--ready-23%2F45-a2650b)
 
 **The experiment.** `adsa eval` gives an agent a real page to build, then counts what
 it invented. It is the only number that has ever changed anyone's mind.
