@@ -11,14 +11,14 @@
  *   adsa badge                    the README badge for the committed score
  */
 import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { loadConfig, resolveTarget } from "../lib/config.mjs";
 import { scan } from "../lib/scan.mjs";
 import { RUBRIC, score, scoreFile } from "../lib/score.mjs";
 import { buildTodo, html, markdown } from "../lib/report.mjs";
 import { badgeEndpoint, badgeMarkdown } from "../lib/badge.mjs";
-import { isDir } from "../lib/fsx.mjs";
+import { exists, isDir } from "../lib/fsx.mjs";
 import { DIR, appendHistory, compare, readHistory, write } from "../lib/history.mjs";
 import { FIXES, applyFix } from "../lib/fix.mjs";
 import { evaluate, taskFile } from "../lib/eval.mjs";
@@ -47,7 +47,7 @@ Usage
 
 Options
   --json                      Machine-readable output
-  --out <dir>                 Where to write the report (default: .adsa)
+  --out <dir>                 Write every artifact here instead of .adsa/
   --gate                      Exit non-zero if the score dropped, or is below --min
   --min <n>                   Minimum acceptable total for --gate
   --dry-run                   fix: show what would change, write nothing
@@ -157,9 +157,13 @@ function cmdAudit(dir, flags, out, json) {
         return 1;
     }
     const scored = score(facts, config);
-    const outDir = flags.out || DIR;
+    // Everything one run writes lands together. --out is read from where the command
+    // was typed, so an absolute path is absolute and a relative one is relative to
+    // the reader, not to the repository being audited.
+    const artefacts = flags.out ? resolve(process.cwd(), flags.out) : join(root, DIR);
+    const fresh = !exists(join(artefacts, "score.json"));
     const file = scoreFile(facts, scored);
-    const previous = readJson(join(root, DIR, "score.json"));
+    const previous = readJson(join(artefacts, "score.json"));
     const delta = compare(previous, file);
 
     if (flags.json) {
@@ -191,14 +195,25 @@ function cmdAudit(dir, flags, out, json) {
         }
     }
 
-    const history = appendHistory(root, { date: file.generatedAt, total: file.total, max: file.max, dimensions: file.dimensions });
-    write(join(root, DIR, "score.json"), file);
-    write(join(root, DIR, "badge.json"), badgeEndpoint(file.total, file.max));
-    const reportDir = join(root, outDir);
-    mkdirSync(reportDir, { recursive: true });
-    writeFileSync(join(reportDir, "report.html"), html(facts, scored, history));
-    writeFileSync(join(reportDir, "report.md"), markdown(facts, scored));
-    if (!flags.json && !flags.quiet) out(dim(`\nReport: ${join(outDir, "report.html")} · score: ${join(DIR, "score.json")}`));
+    const history = appendHistory(artefacts, { date: file.generatedAt, total: file.total, max: file.max, dimensions: file.dimensions });
+    write(join(artefacts, "score.json"), file);
+    write(join(artefacts, "badge.json"), badgeEndpoint(file.total, file.max));
+    mkdirSync(artefacts, { recursive: true });
+    writeFileSync(join(artefacts, "report.html"), html(facts, scored, history));
+    writeFileSync(join(artefacts, "report.md"), markdown(facts, scored));
+    // A path that climbs out of the current directory reads better absolute than as
+    // a ladder of "..".
+    const near = relative(process.cwd(), artefacts);
+    const shown = !near ? "." : near.startsWith("..") ? artefacts : near;
+    if (!flags.json && !flags.quiet) {
+        out(dim(`\nReport: ${join(shown, "report.html")} · score: ${join(shown, "score.json")}`));
+        // Say once what the directory is for, rather than leave someone to guess
+        // whether a new folder in their repository belongs in the commit.
+        if (fresh && !flags.out && exists(join(root, ".git"))) {
+            out(dim("  score.json, badge.json and history.json are meant to be committed — the badge and the gate read them."));
+            out(dim("  report.html and report.md are rewritten every run; ignore them if you would rather not carry them."));
+        }
+    }
 
     if (flags.gate) {
         const floor = flags.min ?? config.minScore ?? (previous ? previous.total : null);

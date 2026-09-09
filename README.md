@@ -58,6 +58,10 @@ the version checked out in front of them instead of reading files and guessing.
 
 `npx adsa-cli rubric` prints what 1, 3 and 5 mean for each.
 
+`--out <dir>` puts every artifact of a run together somewhere else — the report, the
+score, the badge and the history — and reads the previous score from there too, so a
+repository can be audited without writing anything into it.
+
 ## Commands
 
 ```

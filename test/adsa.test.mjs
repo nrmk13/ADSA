@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, describe, it } from "node:test";
@@ -480,6 +480,18 @@ describe("cli", () => {
         const code = await run(["eval", "score", OUTPUT, "--system", EXAMPLE], out.io);
         assert.equal(code, 1);
         assert.match(out.text(), /PageHeader/);
+    });
+
+    it("--out moves every artifact, and leaves the audited repo untouched", async () => {
+        const dir = copyExample();
+        rmSync(join(dir, ".adsa"), { recursive: true, force: true });
+        const out = mkdtempSync(join(tmpdir(), "adsa-out-"));
+        temps.push(out);
+        assert.equal(await run(["audit", dir, "--quiet", "--out", out], capture().io), 0);
+        for (const f of ["report.html", "report.md", "score.json", "badge.json", "history.json"]) {
+            readFileSync(join(out, f));
+        }
+        assert.equal(existsSync(join(dir, ".adsa")), false, "nothing lands in the repository being audited");
     });
 
     it("writes a fix into the directory it was given, not the current one", async () => {
