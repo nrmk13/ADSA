@@ -1,0 +1,32 @@
+# Design tokens
+
+Tables, not prose. An agent copies from a table and guesses from a paragraph.
+
+## Colour
+
+| Token | XML resource / Compose symbol | Use for |
+| :-- | :-- | :-- |
+| `brand_primary` | `colors.xml` → `MaterialTheme.colorScheme.primary` | The main call-to-action colour |
+| _add the rest of your semantic tokens_ | | |
+
+## Spacing
+
+| Token | Value | Use for |
+| :-- | :-- | :-- |
+| `space_2` | 8dp | Gap inside a control |
+| _add your scale_ | | |
+
+## Motion
+
+| Token | Value | Use for |
+| :-- | :-- | :-- |
+| `duration_fast` | 100ms | Ripple, colour changes |
+| `duration_base` | 200ms | Toggles, small reveals |
+| `duration_slow` | 300ms | Sheets, screen transitions |
+
+## Rules
+
+- Product code uses `MaterialTheme.colorScheme` / the theme's typography and shape
+  roles, never a hardcoded `Color(0xFF...)` or a raw hex value in layout XML.
+- A value that is not in these tables is a gap: add it to `colors.xml`/`Theme.kt`
+  and this file in the same change, or ask — do not inline it.

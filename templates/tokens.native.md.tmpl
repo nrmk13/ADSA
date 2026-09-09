@@ -1,0 +1,32 @@
+# Design tokens
+
+Tables, not prose. An agent copies from a table and guesses from a paragraph.
+
+## Colour
+
+| Token | Value (theme key or class) | Use for |
+| :-- | :-- | :-- |
+| `color.bg.primary` | `theme.colors.bgPrimary` | Default screen and card background |
+| _add the rest of your semantic tokens_ | | |
+
+## Spacing
+
+| Token | Value | Use for |
+| :-- | :-- | :-- |
+| `space.2` | 8 | Gap inside a control |
+| _add your scale_ | | |
+
+## Motion
+
+| Token | Value | Use for |
+| :-- | :-- | :-- |
+| `duration.fast` | 100ms | Press feedback, colour changes |
+| `duration.base` | 200ms | Toggles, small reveals |
+| `duration.slow` | 300ms | Sheets, screen transitions |
+
+## Rules
+
+- Product code uses the theme's token values, never a raw color literal in
+  `StyleSheet.create` and never a raw palette class if the theme is exposed through
+  NativeWind.
+- A value that is not in these tables is a gap: add it here or ask, do not inline it.

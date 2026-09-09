@@ -1,0 +1,30 @@
+{
+  "tool": "adsa",
+  "rubric": "1.0",
+  "generatedAt": "2026-09-09T20:31:55.994Z",
+  "target": {
+    "name": "AcmeComponents",
+    "version": null
+  },
+  "total": 15,
+  "max": 45,
+  "dimensions": {
+    "agent-instructions": 1,
+    "machine-surface": 1,
+    "docs-coverage": 3,
+    "docs-freshness": 1,
+    "tokens": 3,
+    "patterns": 1,
+    "a11y": 3,
+    "verification": 1,
+    "gap-handling": 1
+  },
+  "summary": {
+    "components": 2,
+    "documented": 2,
+    "guides": 2,
+    "codeBlocks": 4,
+    "unknownImports": 0,
+    "guidesWithA11y": 1
+  }
+}

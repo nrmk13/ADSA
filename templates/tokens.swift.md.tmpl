@@ -1,0 +1,32 @@
+# Design tokens
+
+Tables, not prose. An agent copies from a table and guesses from a paragraph.
+
+## Colour
+
+| Token | Swift symbol / asset | Use for |
+| :-- | :-- | :-- |
+| `accentPrimary` | `Color("AccentPrimary")` (asset catalog) | The main call-to-action colour |
+| _add the rest of your semantic tokens_ | | |
+
+## Typography
+
+| Token | Swift symbol | Use for |
+| :-- | :-- | :-- |
+| `title` | `.font(.title)` / a custom `ShapeStyle` | Screen titles |
+| _add your scale_ | | |
+
+## Motion
+
+| Token | Value | Use for |
+| :-- | :-- | :-- |
+| `durationFast` | 0.1s | Press feedback, colour changes |
+| `durationBase` | 0.2s | Toggles, small reveals |
+| `durationSlow` | 0.3s | Sheets, navigation transitions |
+
+## Rules
+
+- Product code uses the named colours and text styles this system ships, never a
+  raw `Color(red:green:blue:)` literal or a hardcoded hex string.
+- A value that is not in these tables is a gap: add it to the asset catalog and
+  this file in the same change, or ask — do not inline it.

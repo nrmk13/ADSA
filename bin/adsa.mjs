@@ -91,7 +91,13 @@ function load(dir) {
 
 /** Auditing the wrong directory produces a confident, meaningless number. Say so instead. */
 function looksLikeADesignSystem(facts) {
-    return facts.components.length >= 3 || facts.guides.length >= 2;
+    if (facts.components.length >= 3 || facts.guides.length >= 2) return true;
+    // A small native design system (Swift, Kotlin) can be real with fewer files than a
+    // web one. Strong platform evidence plus at least one real component or guide is
+    // enough to not reject it just for being small.
+    const platform = facts.platform;
+    if (platform && platform.primary !== "web" && platform.detected.length && (facts.components.length >= 1 || facts.guides.length >= 1)) return true;
+    return false;
 }
 
 export async function run(argv, io = {}) {

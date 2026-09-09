@@ -1,0 +1,21 @@
+<!-- adsa:start -->
+## Design system: {{name}}{{version}} ({{stack}})
+
+This project uses {{name}}. Before writing any UI:
+
+- Find the component first: {{lookup}}. Do not read `node_modules` types and do not
+  reach for React Native Elements, NativeBase or a copy-pasted community snippet —
+  this system has its own names.
+- Import per component: `{{importExample}}`. {{importRule}}
+- Colour, spacing, radius and motion come from the system's tokens. {{paletteExample}}
+  are not allowed in product code — use the theme instead.
+- Icons come only from the system's icon set. No second icon library, no local
+  `components/ui` folder, no copied component source.
+- Every `Pressable`, `TouchableOpacity` or custom control needs `accessibilityRole`
+  and an `accessibilityLabel` (or `accessibilityLabelledBy`). A touchable with
+  neither answers to nothing on VoiceOver or TalkBack.
+- **If the component you need does not exist, stop and ask.** Do not invent a
+  wrapper, do not approximate it with a bare `View`, and do not silently pick the
+  nearest thing. Known absences and what to use instead are listed in {{gapsFile}}.
+- Before you call the work done: {{finishCheck}}.
+<!-- adsa:end -->

@@ -1,0 +1,23 @@
+<!-- adsa:start -->
+## Design system: {{name}}{{version}} ({{stack}})
+
+This project uses {{name}}. Before writing any UI:
+
+- Find the view first: {{lookup}}. Do not read the compiled module's generated
+  interface and do not reach for UIKit boilerplate, a different design system, or
+  Apple's default control styles — this system has its own names.
+- Import the module: `{{importExample}}`. {{importRule}}
+- Colour and typography come from the system's tokens. {{paletteExample}} are not
+  allowed in product code — use the named colors and `ShapeStyle`s the system ships,
+  from its asset catalog or token file.
+- Icons come only from the system's asset catalog. No second icon set, no copied
+  view source, no local re-implementation of a view that already exists.
+- Every control needs an accessible name and role: `.accessibilityLabel(...)`,
+  `.accessibilityAddTraits(...)`, and Dynamic Type support (`.font(.body)` style
+  fonts, not fixed point sizes). A view with none of these answers to nothing on
+  VoiceOver.
+- **If the view you need does not exist, stop and ask.** Do not invent a wrapper,
+  do not approximate it with a raw `Text`/`Button`, and do not silently pick the
+  nearest thing. Known absences and what to use instead are listed in {{gapsFile}}.
+- Before you call the work done: {{finishCheck}}.
+<!-- adsa:end -->

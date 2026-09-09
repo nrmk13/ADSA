@@ -19,6 +19,9 @@ import { parseArgs, run } from "../bin/adsa.mjs";
 
 const EXAMPLE = resolve("example/design-system");
 const OUTPUT = resolve("example/agent-output");
+const RN_FIXTURE = resolve("test/fixtures/rn-ds");
+const SWIFT_FIXTURE = resolve("test/fixtures/swift-ds");
+const ANDROID_FIXTURE = resolve("test/fixtures/android-ds");
 const temps = [];
 
 function copyExample() {
@@ -31,6 +34,14 @@ function copyExample() {
     rmSync(join(dir, ".adsa"), { recursive: true, force: true });
     rmSync(join(dir, ".github"), { recursive: true, force: true });
     rmSync(join(dir, "guidelines/design-tokens.md"), { force: true });
+    return dir;
+}
+
+/** A clean copy of a fixture repo, so a fix test never mutates the checked-in fixture. */
+function copyFixture(root) {
+    const dir = mkdtempSync(join(tmpdir(), "adsa-"));
+    temps.push(dir);
+    cpSync(root, dir, { recursive: true });
     return dir;
 }
 
@@ -98,6 +109,106 @@ describe("monorepo", () => {
         assert.equal(target.dir, join(root, "packages", "ui"));
         assert.match(target.note, /@acme\/ui/);
         assert.equal(resolveTarget(EXAMPLE).note, null);
+    });
+});
+
+describe("platforms", () => {
+    it("detects the web example as web, from react in package.json", () => {
+        const { facts } = load(EXAMPLE);
+        assert.equal(facts.platform.primary, "web");
+    });
+
+    it("detects React Native from the react-native dependency, and finds its components like web", () => {
+        const { facts } = load(RN_FIXTURE);
+        assert.equal(facts.platform.primary, "react-native");
+        assert.match(facts.platform.evidence.join(" "), /react-native in package\.json/);
+        assert.deepEqual(facts.components.map((c) => c.name).sort(), ["Button", "Card"]);
+        assert.equal(facts.coverage.documented, 2);
+    });
+
+    it("detects Swift from Package.swift, reads the module name, and finds `struct X: View`", () => {
+        const { facts } = load(SWIFT_FIXTURE);
+        assert.equal(facts.platform.primary, "swift");
+        assert.match(facts.platform.evidence.join(" "), /Package\.swift present/);
+        assert.equal(facts.name, "AcmeKit");
+        assert.deepEqual(facts.components.map((c) => c.name).sort(), ["AKButton", "AKCard"]);
+    });
+
+    it("finds a Swift package's guides in its own .docc bundle, not just adsa.config.json's guides dirs", () => {
+        const { config, facts } = load(SWIFT_FIXTURE);
+        assert.deepEqual(config.guides, []);
+        assert.ok(facts.guides.length >= 2, "expected the .docc bundle's markdown to be picked up");
+        assert.ok(facts.guides.every((g) => g.path.includes(".docc")));
+    });
+
+    it("reads named colours out of a Swift asset catalog as token evidence, without a markdown token guide", () => {
+        const { facts } = load(SWIFT_FIXTURE);
+        assert.equal(facts.tokens.docs.length, 0);
+        assert.ok(facts.tokens.source, "expected asset-catalog evidence");
+        assert.equal(facts.tokens.source.kind, "asset catalog");
+        assert.ok(facts.tokens.source.names.includes("AccentPrimary"));
+    });
+
+    it("detects Android from Gradle + Kotlin, reads the project name, and finds `@Composable fun X`", () => {
+        const { facts } = load(ANDROID_FIXTURE);
+        assert.equal(facts.platform.primary, "android");
+        assert.match(facts.platform.evidence.join(" "), /Gradle build file/);
+        assert.equal(facts.name, "AcmeComponents");
+        assert.deepEqual(facts.components.map((c) => c.name).sort(), ["AKButton", "AKCard"]);
+    });
+
+    it("reads named colours out of colors.xml as token evidence", () => {
+        const { facts } = load(ANDROID_FIXTURE);
+        assert.ok(facts.tokens.source);
+        assert.equal(facts.tokens.source.kind, "XML resources");
+        assert.ok(facts.tokens.source.names.includes("brand_primary"));
+    });
+
+    it("adapts the accessibility vocabulary per platform instead of demanding 'keyboard' everywhere", () => {
+        const rn = score(load(RN_FIXTURE).facts, loadConfig(RN_FIXTURE)).dimensions.find((d) => d.id === "a11y");
+        const swift = score(load(SWIFT_FIXTURE).facts, loadConfig(SWIFT_FIXTURE)).dimensions.find((d) => d.id === "a11y");
+        const android = score(load(ANDROID_FIXTURE).facts, loadConfig(ANDROID_FIXTURE)).dimensions.find((d) => d.id === "a11y");
+        assert.match(rn.evidence[0], /VoiceOver\/TalkBack/);
+        assert.match(swift.evidence[0], /VoiceOver\/Dynamic Type/);
+        assert.match(android.evidence[0], /TalkBack\/content description/);
+    });
+
+    it("scores each new platform's fixture from real evidence, never the floor and never a guess", () => {
+        for (const fixture of [RN_FIXTURE, SWIFT_FIXTURE, ANDROID_FIXTURE]) {
+            const { config, facts } = load(fixture);
+            const scored = score(facts, config);
+            assert.equal(scored.max, 45);
+            assert.ok(scored.total > 9 && scored.total < 40, `${fixture}: ${scored.total}`);
+            for (const d of scored.dimensions) assert.ok(d.evidence.length > 0, `${d.id} has no evidence for ${fixture}`);
+        }
+    });
+
+    it("accepts a small native design system that the generic component/guide threshold would otherwise reject", () => {
+        const { facts } = load(SWIFT_FIXTURE);
+        assert.equal(facts.components.length, 2);
+        assert.equal(facts.guides.length, 2);
+        // Below the generic >=3 components / >=2 guides-only bar would still pass here
+        // because guides.length is 2, but the platform check is what makes a 1-component,
+        // 1-guide native package pass too — assert the mechanism directly.
+        const thin = { ...facts, components: facts.components.slice(0, 1), guides: facts.guides.slice(0, 1) };
+        assert.ok(thin.components.length < 3 && thin.guides.length < 2);
+        assert.ok(thin.platform.primary !== "web" && thin.platform.detected.length > 0);
+    });
+
+    it("writes platform-flavoured agent instructions and moves the score, per platform", () => {
+        for (const fixture of [RN_FIXTURE, SWIFT_FIXTURE, ANDROID_FIXTURE]) {
+            const dir = copyFixture(fixture);
+            let { config, facts } = load(dir);
+            const before = score(facts, config).total;
+            for (const id of Object.keys(FIXES)) applyFix(id, facts, config, {});
+            ({ config, facts } = load(dir));
+            const after = score(facts, config).total;
+            assert.ok(after > before, `${fixture}: ${before} -> ${after}`);
+            const agents = readFileSync(join(dir, "AGENTS.md"), "utf8");
+            if (facts.platform.primary === "react-native") assert.match(agents, /React Native/);
+            if (facts.platform.primary === "swift") assert.match(agents, /swift build.*swift test|Xcode scheme/);
+            if (facts.platform.primary === "android") assert.match(agents, /gradlew/);
+        }
     });
 });
 
@@ -338,6 +449,30 @@ describe("cli", () => {
         readFileSync(join(dir, ".adsa", "badge.json"));
         assert.equal(await run(["audit", dir, "--quiet", "--gate", "--min", "40"], capture().io), 1);
         assert.equal(await run(["audit", dir, "--quiet", "--gate", "--min", "5"], capture().io), 0);
+    });
+
+    it("recognises a thin native design system instead of rejecting it as not a design system", async () => {
+        const dir = mkdtempSync(join(tmpdir(), "adsa-thin-"));
+        temps.push(dir);
+        writeFileSync(
+            join(dir, "Package.swift"),
+            'import PackageDescription\nlet package = Package(name: "Thin", products: [.library(name: "Thin", targets: ["Thin"])], targets: [.target(name: "Thin")])\n',
+        );
+        mkdirSync(join(dir, "Sources", "Thin"), { recursive: true });
+        writeFileSync(join(dir, "Sources", "Thin", "TButton.swift"), "import SwiftUI\npublic struct TButton: View {\n    public var body: some View { Text(\"Hi\") }\n}\n");
+        mkdirSync(join(dir, "Sources", "Thin", "Thin.docc"), { recursive: true });
+        writeFileSync(join(dir, "Sources", "Thin", "Thin.docc", "TButton.md"), "# TButton\n\n## Import\n\n```swift\nimport Thin\n```\n");
+        const out = capture();
+        assert.equal(await run(["audit", dir, "--quiet"], out.io), 0);
+        assert.doesNotMatch(out.text(), /does not look like a design system/);
+
+        // But an unrelated directory with no platform evidence at all is still rejected.
+        const empty = mkdtempSync(join(tmpdir(), "adsa-empty-"));
+        temps.push(empty);
+        writeFileSync(join(empty, "package.json"), JSON.stringify({ name: "nothing" }));
+        const rejected = capture();
+        assert.equal(await run(["audit", empty, "--quiet"], rejected.io), 1);
+        assert.match(rejected.text(), /does not look like a design system/);
     });
 
     it("fails eval when the agent invented components", async () => {

@@ -78,12 +78,12 @@
         {
             "id": "a11y",
             "title": "Accessibility documentation",
-            "question": "Do the guides say which keys a component answers to and what name it needs?",
-            "why": "An agent cannot infer keyboard behaviour from a prop table, so it ships a div that looks like a menu and answers to nothing.",
+            "question": "Do the guides say how a component behaves for assistive technology — keys or gestures, focus, role and name?",
+            "why": "An agent cannot infer that behaviour from a prop table alone. On the web it ships a div that looks like a menu and answers to nothing; on mobile it ships a touchable with no accessible name and no role, silent to VoiceOver and TalkBack alike.",
             "levels": {
                 "1": "Accessibility is not mentioned in the guides.",
                 "3": "Some guides mention it, written by hand and unevenly.",
-                "5": "Every guide carries keys, focus behaviour, role and naming requirements, generated from the primitives the component is built on."
+                "5": "Every guide carries the full interaction contract for its platform — keys or gestures, focus or touch-target behaviour, role and naming requirements — generated from the primitives the component is built on."
             },
             "fixes": ["a11y-docs"]
         },

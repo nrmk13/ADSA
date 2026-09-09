@@ -10,6 +10,15 @@ correct page with it, without a human correcting the result?**
 
 The tool does the counting. You do the judgement, the experiment, and the writing.
 
+The tool audits React/web, React Native, Swift/SwiftUI/UIKit and Kotlin/Jetpack
+Compose, detected from real evidence in the repo (`package.json` dependencies,
+`Package.swift`/`.xcodeproj`, a Gradle build next to `.kt` files) — check
+`facts.platform` in `adsa audit --json` if you are unsure which one it picked, and
+say which platform you audited when you write it up. A dimension that genuinely
+does not apply on that platform is skipped, not scored down — the "keyboard"
+question becomes "VoiceOver/Dynamic Type" on Swift and "TalkBack/content
+description" on Android rather than failing either for lacking a keyboard.
+
 ## Phase 0 — Intake
 
 Ask these in **one message**, numbered, then wait. Do not ask anything the repo can

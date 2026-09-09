@@ -50,7 +50,7 @@ the version checked out in front of them instead of reading files and guessing.
 | 4 | Docs freshness | If a guide drifts from the code, does anything notice? |
 | 5 | Tokens | Are colour, spacing, radius and motion documented as named decisions? |
 | 6 | Patterns | Is there anything above component level — how a real page is assembled? |
-| 7 | Accessibility docs | Do the guides say which keys a component answers to? |
+| 7 | Accessibility docs | Do the guides say how a component behaves for assistive technology? |
 | 8 | Verification | Can an agent check its own work before calling it done? |
 | 9 | Gap handling | What happens when the system genuinely does not have the thing? |
 
@@ -99,13 +99,43 @@ gets it wrong, `adsa.config.json`:
 `skip` is for dimensions that genuinely do not apply — a primitives-only library has
 no page patterns, and a skipped dimension lowers the maximum instead of the score.
 
+## Platforms
+
+ADSA detects which platform a design system is built for from real evidence in the
+repo, and audits it accordingly:
+
+| Platform | Detected from | Components | Tokens |
+| :-- | :-- | :-- | :-- |
+| React / web | `react`, `vue` or `svelte` in `package.json` | Exported symbols or `exports` subpaths | Guide prose, raw Tailwind/hex in examples |
+| React Native | `react-native` or `expo` in `package.json` | Same as web — RN is still TSX | Guide prose, or raw `StyleSheet`/NativeWind values |
+| Swift / SwiftUI / UIKit | `Package.swift`, an `.xcodeproj`/`.xcworkspace`, or several `.swift` files | `public struct X: View` / `open class X: UIView` | Guide prose, or named colours in an `.xcassets` catalog |
+| Kotlin / Jetpack Compose | A Gradle build next to `.kt` files | `@Composable fun X(...)` | Guide prose, or named colours in `colors.xml`/`themes.xml` |
+
+`facts.platform` reports the strongest match as `primary` and every other platform
+it saw real evidence for as `detected` — a monorepo with a web app and a native
+shell is not forced into one label, it is reported honestly as both.
+
+Guides are always markdown, wherever they live: `guidelines/`, `docs/`, or — for a
+Swift package — its own `.docc` bundle, found automatically rather than requiring
+`adsa.config.json` to list it.
+
+Per platform, the agent-instructions and tokens fixes write in that platform's own
+vocabulary (SwiftUI modifiers and `swift build`/`swift test`, Compose semantics and
+`./gradlew test lint`, `StyleSheet`/NativeWind and Metro), and the accessibility
+dimension asks about VoiceOver/Dynamic Type or TalkBack/content description instead
+of demanding "keyboard" from a platform that has none. A dimension that genuinely
+does not apply is skipped — via `adsa.config.json`'s `skip` — not scored down.
+
 ## What it supports honestly
 
-Detection is built for React, TypeScript and markdown guides, and works on any repo
-where guides live in markdown and components are exported from source. Vue and
-Svelte are detected but less well covered. The accessibility and prop-table fixes
-assume a typed component library. Anything it cannot assess it reports as not
-assessed — it never guesses a number.
+Detection is built for React, TypeScript and markdown guides — that path is the
+most mature — and works on any repo where guides live in markdown and components
+are exported from source. Vue and Svelte are detected but less well covered. React
+Native, Swift and Kotlin/Compose detection is newer: components, tokens and
+accessibility evidence are read from real files (see the table above), but the
+freshness fixes (`prop-tables`, `examples-check`) still assume a typed TypeScript
+component library, and their briefs say so. Anything it cannot assess it reports as
+not assessed — it never guesses a number.
 
 ## Try it
 
@@ -119,6 +149,14 @@ node bin/adsa.mjs audit example/design-system        # 23/45
 `example/agent-output` is what an agent built against that system before it was
 fixed. `adsa eval score example/agent-output --system example/design-system` counts
 the three components it invented.
+
+Small fixtures for the other platforms live under `test/fixtures/` — a React Native
+library, a Swift package documented with DocC, and a Kotlin/Compose library — and
+run the same loop:
+
+```bash
+node bin/adsa.mjs audit test/fixtures/swift-ds
+```
 
 ## Licence
 

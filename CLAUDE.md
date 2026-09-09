@@ -18,10 +18,18 @@ rubric/rubric.json  the nine dimensions, 1/3/5 descriptors — the product's spi
 templates/          what fixes write, including briefs/
 skills/ds-audit/    the Claude Code skill that runs the whole audit
 example/            a deliberately unready design system, and what an agent built with it
+test/fixtures/      small fixtures for the other platforms (React Native, Swift, Kotlin/Compose)
 ```
 
 The landing page lives in its own repository; every number on it has to be
 reproducible with a command from this README.
+
+Platform detection (`facts.platform` in `lib/scan.mjs`) decides web vs. React Native
+vs. Swift vs. Android from real evidence, and several checks branch on it —
+components, tokens and the accessibility vocabulary in `lib/score.mjs`, the
+templates in `lib/fix.mjs`. Keep the web path scoring exactly what it scores today
+(`example/design-system` is the regression check); add a platform by extending the
+branches, not by forking the pipeline.
 
 ## Rules
 
