@@ -4,7 +4,7 @@
     "description": "Score a design system on how well coding agents can use it, then fix what is missing.",
     "type": "module",
     "bin": {
-        "adsa": "./bin/adsa.mjs"
+        "adsa": "bin/adsa.mjs"
     },
     "files": [
         "bin",
