@@ -356,8 +356,8 @@ describe("eval task", () => {
 
 describe("badge and history", () => {
     it("colours by band and renders markdown", () => {
-        assert.equal(badgeColor(45, 45), "17795c");
-        assert.equal(badgeColor(9, 45), "a8352c");
+        assert.equal(badgeColor(45, 45), "166534");
+        assert.equal(badgeColor(9, 45), "b91c1c");
         assert.match(badgeMarkdown(23, 45), /agent--ready-23%2F45/);
         assert.equal(badgeEndpoint(23, 45).message, "23/45");
     });

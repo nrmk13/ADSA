@@ -228,7 +228,7 @@ ol.todo .dim-of{font-size:12.5px;color:var(--ink-3)}
 .badge{display:inline-flex;font-family:var(--mono);font-size:11px;line-height:1;border-radius:4px;overflow:hidden;margin-bottom:11px}
 .badge b,.badge i{padding:5px 7px;font-style:normal;font-weight:400;color:#fff}
 .badge b{background:#4c4c4c}
-.badge.strong i{background:#166534}.badge.fair i{background:#15803d}.badge.weak i{background:#a16207}.badge.poor i{background:#b91c1c}
+.badge i{background:var(--badge)}
 .badge-note{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin:-4px 0 11px}
 .trend{display:flex;align-items:flex-end;gap:6px;height:64px;margin-bottom:10px}
 .trend i{flex:1;background:var(--green-tint);border-radius:3px 3px 0 0;display:block;min-height:3px}
@@ -557,9 +557,9 @@ ol.todo .dim-of{font-size:12.5px;color:var(--ink-3)}
     <div class="panel">
       <header><h2>Keep the score</h2><span>.adsa/score.json</span></header>
       <p style="font-size:13.5px;color:var(--ink-2);margin-bottom:12px">Commit the score, gate it in CI, and put the badge in your README so a drop shows up in a diff.</p>
-      <div class="badge weak" role="img" aria-label="Badge preview: agent-ready 23 of 45"><b>agent-ready</b><i>23/45</i></div>
+      <div class="badge" style="--badge:#a16207" role="img" aria-label="Badge preview: agent-ready 23 of 45"><b>agent-ready</b><i>23/45</i></div>
       <p class="badge-note">how it renders in the README</p>
-      <div class="snippet"><code>![Agent-ready](https://img.shields.io/badge/agent--ready-23%2F45-a16207)</code><button class="copy icon" type="button" data-copy="![Agent-ready](https://img.shields.io/badge/agent--ready-23%2F45-a16207)" aria-label="Copy the badge markdown"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5.4" y="2.4" width="8.2" height="9.2" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M10.6 13.6H4.4a2 2 0 0 1-2-2V5.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button></div>
+      <div class="snippet"><code>![Agent-ready 23/45](https://img.shields.io/badge/agent--ready-23%2F45-a16207)</code><button class="copy icon" type="button" data-copy="![Agent-ready 23/45](https://img.shields.io/badge/agent--ready-23%2F45-a16207)" aria-label="Copy the badge markdown"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5.4" y="2.4" width="8.2" height="9.2" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M10.6 13.6H4.4a2 2 0 0 1-2-2V5.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button></div>
     </div>
     <div class="panel">
       <header><h2>History</h2><span>1 run</span></header>
