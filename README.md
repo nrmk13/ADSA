@@ -1,3 +1,5 @@
+<img src="assets/cover.png" alt="Agentic Design System" width="100%">
+
 # ADSA — agentic design system audit
 
 ![Agent-ready 23/45](https://img.shields.io/badge/agent--ready-23%2F45-a2650b)
