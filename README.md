@@ -1,6 +1,8 @@
 <img src="assets/cover.png" alt="Agentic Design System" width="100%">
 
-# ADSA — agentic design system audit
+# ADSA
+
+[adsa.space](https://adsa.space) — agentic design system audit
 
 Your design system is documented for people. An agent is not a person: it cannot ask
 a colleague, it cannot tell *this does not exist* from *I have not found it yet*, and
