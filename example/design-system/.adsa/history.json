@@ -1,0 +1,18 @@
+[
+  {
+    "date": "2026-09-09T15:43:33.730Z",
+    "total": 23,
+    "max": 45,
+    "dimensions": {
+      "agent-instructions": 5,
+      "machine-surface": 5,
+      "docs-coverage": 1,
+      "docs-freshness": 1,
+      "tokens": 3,
+      "patterns": 1,
+      "a11y": 1,
+      "verification": 3,
+      "gap-handling": 3
+    }
+  }
+]

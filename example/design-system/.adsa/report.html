@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>@acme/ui — agent readiness</title>
+<style>
+:root{
+  --paper:#fbfbfc;--card:#fff;--ink:#111318;--muted:#5b6472;--faint:#8b94a2;
+  --line:#e5e8ed;--rail:#eef0f4;--accent:#1f5fd0;--accent-soft:#e9f0fd;
+  --strong:#17795c;--fair:#1f5fd0;--weak:#a2650b;--poor:#a8352c;
+  --sans:"Inter var",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#0d0f13;--card:#14171d;--ink:#e8ebf0;--muted:#98a1b0;--faint:#6b7482;
+  --line:#222731;--rail:#1b1f27;--accent:#6ea1ff;--accent-soft:#16233a;
+  --strong:#43c39a;--fair:#6ea1ff;--weak:#d9a13f;--poor:#e2726a;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:clamp(28px,5vw,64px) clamp(18px,4vw,32px) 80px;display:flex;flex-direction:column;gap:44px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+h1{font-size:clamp(26px,4vw,36px);line-height:1.12;letter-spacing:-.02em;margin:.35em 0 0;text-wrap:balance}
+h2{font-size:15px;letter-spacing:-.01em;margin:0}
+.hero{display:flex;flex-direction:column;gap:22px}
+.verdict{font-size:clamp(18px,2.4vw,22px);line-height:1.4;margin:0;color:var(--ink);max-width:58ch}
+.total{display:flex;align-items:flex-end;gap:14px;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.total b{font-size:clamp(48px,9vw,76px);font-weight:500;line-height:.9;letter-spacing:-.03em;color:var(--weak)}
+.total span{font-size:16px;color:var(--faint);padding-bottom:6px}
+.meta{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.meta div{padding-right:24px;margin-right:24px;border-right:1px solid var(--rail)}
+.meta div:last-child{border:0;margin:0;padding:0}
+.meta b{display:block;font-family:var(--mono);font-size:15px;font-variant-numeric:tabular-nums}
+.meta span{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+section{display:flex;flex-direction:column;gap:18px}
+.section-head{border-bottom:1px solid var(--line);padding-bottom:10px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.section-head p{margin:0;color:var(--faint);font-size:13.5px;flex:1;min-width:220px}
+.dim{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.dim-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.dim-top h3{margin:0;font-size:15.5px;letter-spacing:-.01em;flex:1;min-width:170px}
+.meter{display:flex;gap:3px}
+.meter i{width:22px;height:8px;border-radius:2px;background:var(--rail)}
+.meter i.on{background:var(--accent)}
+.dim[data-score="5"] .meter i.on{background:var(--strong)}
+.dim[data-score="1"] .meter i.on{background:var(--poor)}
+.dim[data-score="3"] .meter i.on{background:var(--weak)}
+.num{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
+.q{margin:0;color:var(--muted);font-size:14px}
+.ev{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:var(--muted)}
+.ev li{padding-left:14px;position:relative}
+.ev li::before{content:"";position:absolute;left:0;top:.62em;width:5px;height:1px;background:var(--faint)}
+.at{font-size:13px;color:var(--faint);border-left:2px solid var(--rail);padding-left:12px}
+.at b{color:var(--ink);font-weight:600}
+ol.todo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;counter-reset:t}
+ol.todo li{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:13px 16px;display:flex;gap:12px;align-items:flex-start}
+ol.todo input{margin:3px 0 0;accent-color:var(--accent);width:15px;height:15px}
+.todo-main{flex:1;min-width:0}
+.todo-main b{font-weight:600;font-size:14.5px}
+.todo-main p{margin:2px 0 0;color:var(--muted);font-size:13.5px}
+.todo-main code{font-family:var(--mono);font-size:12px;background:var(--accent-soft);color:var(--accent);padding:2px 6px;border-radius:4px}
+.size{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--faint);border:1px solid var(--line);border-radius:3px;padding:3px 7px}
+.done .todo-main b{text-decoration:line-through;color:var(--faint)}
+.badge{font-family:var(--mono);font-size:12px;background:var(--card);border:1px solid var(--line);border-radius:7px;padding:12px 14px;overflow-x:auto;white-space:pre}
+footer{border-top:1px solid var(--line);padding-top:16px;color:var(--faint);font-family:var(--mono);font-size:11px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+a{color:var(--accent)}
+@media print{body{background:#fff}.dim,ol.todo li{break-inside:avoid}}
+</style></head>
+<body><div class="wrap">
+
+<header class="hero">
+  <div>
+    <div class="eyebrow">Agent readiness · rubric 1.0 · 2026-09-09</div>
+    <h1>@acme/ui <span style="color:var(--faint);font-weight:400">1.4.0</span></h1>
+  </div>
+  <div class="total"><b>23</b><span>/ 45</span></div>
+  <p class="verdict">An agent will produce plausible, wrong UI here more often than not.</p>
+  <div class="meta">
+    <div><b>3/6</b><span>components documented</span></div>
+    <div><b>4</b><span>guides</span></div>
+    <div><b>7</b><span>code blocks</span></div>
+    <div><b>1</b><span>imports that don't exist</span></div>
+    <div><b>React · TS · Tailwind</b><span>stack</span></div>
+  </div>
+</header>
+
+<section>
+  <div class="section-head"><h2>The nine dimensions</h2><p>Each one is scored 1, 3 or 5 from what is in the repository. The evidence under each row is what produced the number.</p></div>
+  <article class="dim" data-score="5">
+  <div class="dim-top"><h3>Agent instructions</h3><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div><span class="num">5 / 5</span></div>
+  <p class="q">When an agent opens this repo, does anything tell it how to use the system?</p>
+  <ul class="ev"><li>AGENTS.md, 20 lines.</li><li>Contains an import rule, a lookup command, token rules, a list of what is forbidden, a check to run before finishing.</li></ul>
+  <p class="at"><b>At 5.</b> Short and imperative: how to look a component up, how to import, which token classes are required, what is forbidden, what to run before finishing.</p>
+</article>
+<article class="dim" data-score="5">
+  <div class="dim-top"><h3>Machine surface</h3><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div><span class="num">5 / 5</span></div>
+  <p class="q">Can an agent query the system, or must it read files and guess?</p>
+  <ul class="ev"><li>.mcp.json registers adsa.</li></ul>
+  <p class="at"><b>At 5.</b> An MCP server or CLI that ships inside the package and answers from the installed version, so answers match the version the project has.</p>
+</article>
+<article class="dim" data-score="1">
+  <div class="dim-top"><h3>Docs coverage</h3><div class="meter"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><span class="num">1 / 5</span></div>
+  <p class="q">Does every component a consumer can import have a guide?</p>
+  <ul class="ev"><li>3 of 6 importable components have a guide (50%).</li><li>Undocumented, first few: Badge, Modal, Table.</li><li>CI runs a documentation check.</li></ul>
+  <p class="at"><b>To reach 3:</b> Most have one, and nothing stops a new component from shipping without one.</p>
+</article>
+<article class="dim" data-score="1">
+  <div class="dim-top"><h3>Docs freshness</h3><div class="meter"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><span class="num">1 / 5</span></div>
+  <p class="q">If a guide drifts from the code, does anything notice?</p>
+  <ul class="ev"><li>4 guides, 7 code blocks, 0 with a prop table.</li><li>No guide is marked as generated, so every table is hand-maintained.</li><li>1 imports in the guides name symbols this repo does not export, e.g. ButtonGroup in guidelines/button.md.</li><li>Nothing compares the guides to the code.</li></ul>
+  <p class="at"><b>To reach 3:</b> Prop tables or examples are generated, but regenerating is a manual step somebody has to remember.</p>
+</article>
+<article class="dim" data-score="3">
+  <div class="dim-top"><h3>Tokens</h3><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></div><span class="num">3 / 5</span></div>
+  <p class="q">Are colour, spacing, radius and motion documented as named decisions?</p>
+  <ul class="ev"><li>Token documentation: guidelines/design-tokens.md.</li><li>Motion documented; spacing documented.</li><li>2 raw palette classes in guide examples, e.g. bg-gray-100, text-blue-600.</li></ul>
+  <p class="at"><b>To reach 5:</b> Semantic tokens documented as tables, raw palette usage forbidden by lint, and motion and spacing covered as well as colour.</p>
+</article>
+<article class="dim" data-score="1">
+  <div class="dim-top"><h3>Patterns</h3><div class="meter"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><span class="num">1 / 5</span></div>
+  <p class="q">Is there anything above component level — how a real page is assembled?</p>
+  <ul class="ev"><li>Components only. Nothing describes how a page is assembled.</li></ul>
+  <p class="at"><b>To reach 3:</b> A pattern-to-component map: for this task, reach for these parts.</p>
+</article>
+<article class="dim" data-score="1">
+  <div class="dim-top"><h3>Accessibility documentation</h3><div class="meter"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><span class="num">1 / 5</span></div>
+  <p class="q">Do the guides say which keys a component answers to and what name it needs?</p>
+  <ul class="ev"><li>0 of 4 guides carry a keyboard or accessibility section (0%).</li><li>No automated accessibility check found.</li></ul>
+  <p class="at"><b>To reach 3:</b> Some guides mention it, written by hand and unevenly.</p>
+</article>
+<article class="dim" data-score="3">
+  <div class="dim-top"><h3>Verification</h3><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></div><span class="num">3 / 5</span></div>
+  <p class="q">Can an agent check its own work before calling it done?</p>
+  <ul class="ev"><li>0 test files, 0 stories.</li><li>No test, typecheck or lint script.</li><li>CI: .github/workflows/adsa.yml.</li><li>The agent-readiness score itself is gated in CI.</li></ul>
+  <p class="at"><b>To reach 5:</b> Every story rendered and checked for accessibility in CI, with a baseline that can only shrink, and one documented command an agent runs before finishing.</p>
+</article>
+<article class="dim" data-score="3">
+  <div class="dim-top"><h3>Gap handling</h3><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></div><span class="num">3 / 5</span></div>
+  <p class="q">What happens when the system genuinely does not have the thing?</p>
+  <ul class="ev"><li>A list of known absences exists: GAPS.md.</li><li>The agent instructions tell the agent to stop and ask instead of inventing.</li><li>No way for an agent to report a new gap where the next agent will read it.</li></ul>
+  <p class="at"><b>To reach 5:</b> The list, plus an explicit stop-and-ask rule in the agent instructions, plus a way to report a new gap that lands where the next agent reads.</p>
+</article>
+</section>
+
+<section>
+  <div class="section-head"><h2>What to do, in order</h2><p>Cheapest first. Ticking a box is saved in this browser only.</p></div>
+  <ol class="todo"><li data-fix="coverage-gate"><input type="checkbox" aria-label="Fail CI on an undocumented export done"><div class="todo-main"><b>Fail CI on an undocumented export</b><p>Docs coverage, +4 available · run <code>adsa fix coverage-gate</code></p></div><span class="size">S</span></li><li data-fix="tokens-doc"><input type="checkbox" aria-label="Document tokens as tables done"><div class="todo-main"><b>Document tokens as tables</b><p>Tokens, +2 available · run <code>adsa fix tokens-doc</code></p></div><span class="size">S</span></li><li data-fix="ci-workflow"><input type="checkbox" aria-label="Put the checks in CI done"><div class="todo-main"><b>Put the checks in CI</b><p>Verification, +2 available · run <code>adsa fix ci-workflow</code></p></div><span class="size">S</span></li><li data-fix="gaps-file"><input type="checkbox" aria-label="List what the system does not have done"><div class="todo-main"><b>List what the system does not have</b><p>Gap handling, +2 available · run <code>adsa fix gaps-file</code></p></div><span class="size">S</span></li><li data-fix="prop-tables"><input type="checkbox" aria-label="Generate prop tables from types done"><div class="todo-main"><b>Generate prop tables from types</b><p>Docs freshness, +4 available · run <code>adsa fix prop-tables</code></p></div><span class="size">M</span></li><li data-fix="examples-check"><input type="checkbox" aria-label="Compile guide examples in CI done"><div class="todo-main"><b>Compile guide examples in CI</b><p>Docs freshness, +4 available · run <code>adsa fix examples-check</code></p></div><span class="size">M</span></li><li data-fix="a11y-docs"><input type="checkbox" aria-label="Add keyboard and accessibility sections done"><div class="todo-main"><b>Add keyboard and accessibility sections</b><p>Accessibility documentation, +4 available · run <code>adsa fix a11y-docs</code></p></div><span class="size">M</span></li><li data-fix="patterns-doc"><input type="checkbox" aria-label="Write page-level patterns done"><div class="todo-main"><b>Write page-level patterns</b><p>Patterns, +4 available · run <code>adsa fix patterns-doc</code></p></div><span class="size">L</span></li></ol>
+</section>
+
+<section>
+  <div class="section-head"><h2>Keep the score</h2><p>Commit <code>.adsa/score.json</code>, gate it in CI, and put the badge in your README so a drop is visible.</p></div>
+  <div class="badge">![Agent-ready](https://img.shields.io/badge/agent--ready-23%2F45-a2650b)</div>
+  
+</section>
+
+<footer><span>adsa · agentic design system audit</span><span>From one designer to designers with love &lt;3</span></footer>
+</div>
+<script>
+(function(){
+  var KEY = "adsa-todo:" + document.title;
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+  document.querySelectorAll("ol.todo li").forEach(function (li) {
+    var box = li.querySelector("input");
+    var id = li.dataset.fix;
+    box.checked = Boolean(done[id]);
+    li.classList.toggle("done", box.checked);
+    box.addEventListener("change", function () {
+      done[id] = box.checked;
+      li.classList.toggle("done", box.checked);
+      try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
+    });
+  });
+})();
+</script>
+</body></html>

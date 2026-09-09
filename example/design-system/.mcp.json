@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "adsa": {
+      "command": "npx",
+      "args": [
+        "--yes",
+        "adsa@latest",
+        "mcp"
+      ]
+    }
+  }
+}

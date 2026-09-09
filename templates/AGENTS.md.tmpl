@@ -1,0 +1,17 @@
+<!-- adsa:start -->
+## Design system: {{name}}{{version}}
+
+This project uses {{name}}. Before writing any UI:
+
+- Find the component first: {{lookup}}. Do not read `node_modules` types and do not
+  reach for habits from shadcn, MUI or Radix — this system has its own names.
+- Import per component: `{{importExample}}`. {{importRule}}
+- Colour, spacing, radius and typography come from the system's tokens. Raw palette
+  classes ({{paletteExample}}) and raw hex values are not allowed in product code.
+- Icons come only from the system's icon set. No second icon library, no local
+  `components/ui` folder, no copied component source.
+- **If the component you need does not exist, stop and ask.** Do not invent a
+  wrapper, do not approximate it with a div, and do not silently pick the nearest
+  thing. Known absences and what to use instead are listed in {{gapsFile}}.
+- Before you call the work done: {{finishCheck}}.
+<!-- adsa:end -->

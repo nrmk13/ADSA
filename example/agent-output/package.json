@@ -1,0 +1,1 @@
+{ "name": "acme-settings-page", "private": true, "dependencies": { "@acme/ui": "^1.4.0", "react": "^19", "lucide-react": "^0.4.0" } }

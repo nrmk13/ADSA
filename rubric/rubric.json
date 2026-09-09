@@ -1,0 +1,115 @@
+{
+    "version": "1.0",
+    "max": 45,
+    "scale": [1, 3, 5],
+    "dimensions": [
+        {
+            "id": "agent-instructions",
+            "title": "Agent instructions",
+            "question": "When an agent opens this repo, does anything tell it how to use the system?",
+            "why": "An agent with no instructions falls back on habits from other libraries: shadcn imports, raw Tailwind palette classes, a local components/ui folder.",
+            "levels": {
+                "1": "No AGENTS.md or CLAUDE.md, or one that never mentions the design system.",
+                "3": "A file exists and names the package, but reads like a README: prose, no rules an agent can follow.",
+                "5": "Short and imperative: how to look a component up, how to import, which token classes are required, what is forbidden, what to run before finishing."
+            },
+            "fixes": ["agents-md"]
+        },
+        {
+            "id": "machine-surface",
+            "title": "Machine surface",
+            "question": "Can an agent query the system, or must it read files and guess?",
+            "why": "Reading .d.ts files burns context and teaches the agent the type, not the rule. A queryable surface answers the question the agent actually has.",
+            "levels": {
+                "1": "Nothing. Docs are a website or markdown a human reads.",
+                "3": "One machine-readable entry point: llms.txt, a docs CLI, or published skills.",
+                "5": "An MCP server or CLI that ships inside the package and answers from the installed version, so answers match the version the project has."
+            },
+            "fixes": ["mcp-config"]
+        },
+        {
+            "id": "docs-coverage",
+            "title": "Docs coverage",
+            "question": "Does every component a consumer can import have a guide?",
+            "why": "A component with no guide is a component the agent will either skip or reinvent, and undocumented exports are where invented APIs come from.",
+            "levels": {
+                "1": "Under half of the exported components have a guide.",
+                "3": "Most have one, and nothing stops a new component from shipping without one.",
+                "5": "Effectively all of them, and CI fails when a new export arrives without a guide."
+            },
+            "fixes": ["coverage-gate"]
+        },
+        {
+            "id": "docs-freshness",
+            "title": "Docs freshness",
+            "question": "If a guide drifts from the code, does anything notice?",
+            "why": "Docs written next to the code look fine until something checks them. Guides that can only fail silently always drift.",
+            "levels": {
+                "1": "Guides are hand-written prose; nothing compares them to the code.",
+                "3": "Prop tables or examples are generated, but regenerating is a manual step somebody has to remember.",
+                "5": "CI regenerates the generated parts and compiles every code block in the guides against the built package. A guide that lies turns the build red."
+            },
+            "fixes": ["prop-tables", "examples-check"]
+        },
+        {
+            "id": "tokens",
+            "title": "Tokens",
+            "question": "Are colour, spacing, radius and motion documented as named decisions?",
+            "why": "Without a token table the agent hardcodes hex values and raw palette classes, and every screen drifts a little further from the system.",
+            "levels": {
+                "1": "No token documentation; guides show raw hex or raw palette classes.",
+                "3": "Tokens exist and are documented, but examples still mix in raw values.",
+                "5": "Semantic tokens documented as tables, raw palette usage forbidden by lint, and motion and spacing covered as well as colour."
+            },
+            "fixes": ["tokens-doc"]
+        },
+        {
+            "id": "patterns",
+            "title": "Patterns",
+            "question": "Is there anything above component level — how a real page is assembled?",
+            "why": "Components tell an agent what exists. Patterns tell it what to build. Without them each agent re-invents page structure from scratch.",
+            "levels": {
+                "1": "Components only. Nothing describes a page.",
+                "3": "A pattern-to-component map: for this task, reach for these parts.",
+                "5": "Page-level patterns with skeleton, states and traps, loaded on demand rather than always in context."
+            },
+            "fixes": ["patterns-doc"]
+        },
+        {
+            "id": "a11y",
+            "title": "Accessibility documentation",
+            "question": "Do the guides say which keys a component answers to and what name it needs?",
+            "why": "An agent cannot infer keyboard behaviour from a prop table, so it ships a div that looks like a menu and answers to nothing.",
+            "levels": {
+                "1": "Accessibility is not mentioned in the guides.",
+                "3": "Some guides mention it, written by hand and unevenly.",
+                "5": "Every guide carries keys, focus behaviour, role and naming requirements, generated from the primitives the component is built on."
+            },
+            "fixes": ["a11y-docs"]
+        },
+        {
+            "id": "verification",
+            "title": "Verification",
+            "question": "Can an agent check its own work before calling it done?",
+            "why": "Speed is not the problem. An agent that cannot verify produces confident output nobody can audit.",
+            "levels": {
+                "1": "Types only, or nothing. A human is the first check.",
+                "3": "Unit tests and lint, run by hand.",
+                "5": "Every story rendered and checked for accessibility in CI, with a baseline that can only shrink, and one documented command an agent runs before finishing."
+            },
+            "fixes": ["ci-workflow"]
+        },
+        {
+            "id": "gap-handling",
+            "title": "Gap handling",
+            "question": "What happens when the system genuinely does not have the thing?",
+            "why": "An agent cannot tell 'this does not exist' from 'I have not found it yet', so it invents a component and moves on. More documentation cannot fix an absence.",
+            "levels": {
+                "1": "Nothing. The agent fills the gap silently with the nearest thing it knows.",
+                "3": "A written list of known absences and what to use instead.",
+                "5": "The list, plus an explicit stop-and-ask rule in the agent instructions, plus a way to report a new gap that lands where the next agent reads."
+            },
+            "fixes": ["gaps-file"]
+        }
+    ]
+}

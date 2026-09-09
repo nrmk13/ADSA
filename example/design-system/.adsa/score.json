@@ -1,0 +1,30 @@
+{
+  "tool": "adsa",
+  "rubric": "1.0",
+  "generatedAt": "2026-09-09T15:43:33.730Z",
+  "target": {
+    "name": "@acme/ui",
+    "version": "1.4.0"
+  },
+  "total": 23,
+  "max": 45,
+  "dimensions": {
+    "agent-instructions": 5,
+    "machine-surface": 5,
+    "docs-coverage": 1,
+    "docs-freshness": 1,
+    "tokens": 3,
+    "patterns": 1,
+    "a11y": 1,
+    "verification": 3,
+    "gap-handling": 3
+  },
+  "summary": {
+    "components": 6,
+    "documented": 3,
+    "guides": 4,
+    "codeBlocks": 7,
+    "unknownImports": 1,
+    "guidesWithA11y": 0
+  }
+}
