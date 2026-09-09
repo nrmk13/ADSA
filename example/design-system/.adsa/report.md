@@ -18,14 +18,14 @@ An agent will produce plausible, wrong UI here more often than not.
 
 ## What to do, in order
 
-- [ ] **Fail CI on an undocumented export** (S) — Docs coverage, +4 available. `adsa fix coverage-gate`
-- [ ] **Document tokens as tables** (S) — Tokens, +2 available. `adsa fix tokens-doc`
-- [ ] **Put the checks in CI** (S) — Verification, +2 available. `adsa fix ci-workflow`
-- [ ] **List what the system does not have** (S) — Gap handling, +2 available. `adsa fix gaps-file`
-- [ ] **Generate prop tables from types** (M) — Docs freshness, +4 available. `adsa fix prop-tables`
-- [ ] **Compile guide examples in CI** (M) — Docs freshness, +4 available. `adsa fix examples-check`
-- [ ] **Add keyboard and accessibility sections** (M) — Accessibility documentation, +4 available. `adsa fix a11y-docs`
-- [ ] **Write page-level patterns** (L) — Patterns, +4 available. `adsa fix patterns-doc`
+- [ ] **Document tokens as tables** — Tokens 3 → 5, adsa writes it. `adsa fix tokens-doc`
+- [ ] **Put the checks in CI** — Verification 3 → 5, adsa writes it. `adsa fix ci-workflow`
+- [ ] **List what the system does not have** — Gap handling 3 → 5, adsa writes it. `adsa fix gaps-file`
+- [ ] **Fail CI on an undocumented export** — Docs coverage 1 → 5, brief for your agent. `adsa fix coverage-gate`
+- [ ] **Generate prop tables from types** — Docs freshness 1 → 5, brief for your agent. `adsa fix prop-tables`
+- [ ] **Compile guide examples in CI** — Docs freshness 1 → 5, brief for your agent. `adsa fix examples-check`
+- [ ] **Write page-level patterns** — Patterns 1 → 5, brief for your agent. `adsa fix patterns-doc`
+- [ ] **Add keyboard and accessibility sections** — Accessibility documentation 1 → 5, brief for your agent. `adsa fix a11y-docs`
 
 ---
 

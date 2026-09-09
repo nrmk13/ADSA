@@ -16,7 +16,7 @@ import { pathToFileURL } from "node:url";
 import { loadConfig, resolveTarget } from "../lib/config.mjs";
 import { scan } from "../lib/scan.mjs";
 import { RUBRIC, score, scoreFile } from "../lib/score.mjs";
-import { html, markdown } from "../lib/report.mjs";
+import { buildTodo, html, markdown } from "../lib/report.mjs";
 import { badgeEndpoint, badgeMarkdown } from "../lib/badge.mjs";
 import { DIR, appendHistory, compare, readHistory, write } from "../lib/history.mjs";
 import { FIXES, applyFix } from "../lib/fix.mjs";
@@ -173,8 +173,8 @@ function cmdAudit(dir, flags, out, json) {
                 out(`  ${String(d.skipped ? "—" : d.score).padStart(2)}/5 ${bar}  ${d.skipped ? dim(d.title) : d.title}`);
             }
             out("");
-            const todo = scored.dimensions.flatMap((d) => d.fixes);
-            if (todo.length) out(dim(`Next: ${[...new Set(todo)].slice(0, 3).map((f) => `adsa fix ${f}`).join(", ")}`));
+            const todo = buildTodo(scored);
+            if (todo.length) out(dim(`Next: ${todo.slice(0, 3).map((i) => `adsa fix ${i.fix}`).join(", ")}`));
             if (delta) {
                 const move = `Since the last run: ${delta.from} → ${delta.to} (${delta.delta >= 0 ? "+" : ""}${delta.delta})`;
                 out(delta.delta > 0 ? green(move) : delta.delta < 0 ? red(move) : dim(move));
