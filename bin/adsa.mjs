@@ -177,7 +177,12 @@ function cmdAudit(dir, flags, out, json) {
             }
             out("");
             const todo = buildTodo(scored);
-            if (todo.length) out(dim(`Next: ${todo.slice(0, 3).map((i) => `npx adsa-cli fix ${i.fix}`).join(", ")}`));
+            if (todo.length) {
+                // The command once, then the ids. Three full npx lines is 90 columns
+                // of mostly repeated prefix.
+                const rest = todo.length - 1;
+                out(dim(`Next: npx adsa-cli fix ${todo[0].fix}${rest ? `  · ${rest} more in the report` : ""}`));
+            }
             if (delta) {
                 const move = `Since the last run: ${delta.from} → ${delta.to} (${delta.delta >= 0 ? "+" : ""}${delta.delta})`;
                 out(delta.delta > 0 ? green(move) : delta.delta < 0 ? red(move) : dim(move));
