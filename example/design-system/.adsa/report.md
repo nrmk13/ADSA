@@ -1,6 +1,6 @@
 # @acme/ui — agent readiness
 
-**23 / 45** · rubric 1.0 · 2026-09-09
+**23 / 45** · Gaps to address · rubric 1.0 · 2026-09-09
 
 An agent will produce plausible, wrong UI here more often than not.
 
@@ -19,13 +19,13 @@ An agent will produce plausible, wrong UI here more often than not.
 ## What to do, in order
 
 - [ ] **Fail CI on an undocumented export** (S) — Docs coverage, +4 available. `adsa fix coverage-gate`
-- [ ] **Generate prop tables from types** (M) — Docs freshness, +4 available. `adsa fix prop-tables`
-- [ ] **Compile guide examples in CI** (M) — Docs freshness, +4 available. `adsa fix examples-check`
 - [ ] **Document tokens as tables** (S) — Tokens, +2 available. `adsa fix tokens-doc`
-- [ ] **Write page-level patterns** (L) — Patterns, +4 available. `adsa fix patterns-doc`
-- [ ] **Add keyboard and accessibility sections** (M) — Accessibility documentation, +4 available. `adsa fix a11y-docs`
 - [ ] **Put the checks in CI** (S) — Verification, +2 available. `adsa fix ci-workflow`
 - [ ] **List what the system does not have** (S) — Gap handling, +2 available. `adsa fix gaps-file`
+- [ ] **Generate prop tables from types** (M) — Docs freshness, +4 available. `adsa fix prop-tables`
+- [ ] **Compile guide examples in CI** (M) — Docs freshness, +4 available. `adsa fix examples-check`
+- [ ] **Add keyboard and accessibility sections** (M) — Accessibility documentation, +4 available. `adsa fix a11y-docs`
+- [ ] **Write page-level patterns** (L) — Patterns, +4 available. `adsa fix patterns-doc`
 
 ---
 
