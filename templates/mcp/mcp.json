@@ -2,7 +2,7 @@
     "mcpServers": {
         "adsa": {
             "command": "npx",
-            "args": ["--yes", "adsa@latest", "mcp"]
+            "args": ["--yes", "adsa-cli@latest", "mcp"]
         }
     }
 }

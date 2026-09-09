@@ -45,8 +45,8 @@ scoring it badly. A dimension that does not apply is skipped, never failed.
 ## Phase 1 — Run the tool
 
 ```bash
-npx adsa audit <path>            # score, report, .adsa/score.json
-npx adsa audit <path> --json     # the same, machine-readable
+npx adsa-cli audit <path>            # score, report, .adsa/score.json
+npx adsa-cli audit <path> --json     # the same, machine-readable
 ```
 
 Read `.adsa/report.md` and the evidence under every dimension. The score is a
@@ -68,9 +68,9 @@ Open five or six guides yourself, including the biggest and the oldest. Look for
 This is the finding people believe. Everything else is opinion.
 
 ```bash
-npx adsa eval init                          # writes the task
+npx adsa-cli eval init                          # writes the task
 # hand the task to a fresh agent session, let it build
-npx adsa eval score <project> --system <ds> # measure what came out
+npx adsa-cli eval score <project> --system <ds> # measure what came out
 ```
 
 Record: components invented, imports from the system, forbidden packages, raw
@@ -112,16 +112,16 @@ Then say what to do first, in one sentence, and stop. Do not pad.
 ## Phase 6 — Fix
 
 ```bash
-npx adsa fix --list        # what is automatic and what is a brief
-npx adsa fix agents-md     # writes files
-npx adsa fix prop-tables   # writes a task brief for you to execute
+npx adsa-cli fix --list        # what is automatic and what is a brief
+npx adsa-cli fix agents-md     # writes files
+npx adsa-cli fix prop-tables   # writes a task brief for you to execute
 ```
 
 Briefs are specifications, not suggestions: read the whole brief, follow the traps
 section, and verify the check fails when you break something on purpose. A check
 that never fails is not a check.
 
-After the fixes: `npx adsa audit` again. The delta is the deliverable.
+After the fixes: `npx adsa-cli audit` again. The delta is the deliverable.
 
 ## Rules
 

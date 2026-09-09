@@ -18,17 +18,17 @@ There is nothing here for an agent to follow, so it will follow its own habits.
 
 ## What to do, in order
 
-- [ ] **Write agent instructions** (S) — Agent instructions, +4 available. `adsa fix agents-md`
-- [ ] **Put the checks in CI** (S) — Verification, +4 available. `adsa fix ci-workflow`
-- [ ] **List what the system does not have** (S) — Gap handling, +4 available. `adsa fix gaps-file`
-- [ ] **Fail CI on an undocumented export** (S) — Docs coverage, +2 available. `adsa fix coverage-gate`
-- [ ] **Document tokens as tables** (S) — Tokens, +2 available. `adsa fix tokens-doc`
-- [ ] **Expose the docs as MCP tools** (M) — Machine surface, +4 available. `adsa fix mcp-config`
-- [ ] **Generate prop tables from types** (M) — Docs freshness, +4 available. `adsa fix prop-tables`
-- [ ] **Compile guide examples in CI** (M) — Docs freshness, +4 available. `adsa fix examples-check`
-- [ ] **Add keyboard and accessibility sections** (M) — Accessibility documentation, +2 available. `adsa fix a11y-docs`
-- [ ] **Write page-level patterns** (L) — Patterns, +4 available. `adsa fix patterns-doc`
+- [ ] **Write agent instructions** — Agent instructions 1 → 5, adsa writes it. `npx adsa-cli fix agents-md`
+- [ ] **Expose the docs as MCP tools** — Machine surface 1 → 5, adsa writes it. `npx adsa-cli fix mcp-config`
+- [ ] **Put the checks in CI** — Verification 1 → 5, adsa writes it. `npx adsa-cli fix ci-workflow`
+- [ ] **List what the system does not have** — Gap handling 1 → 5, adsa writes it. `npx adsa-cli fix gaps-file`
+- [ ] **Document tokens as tables** — Tokens 3 → 5, adsa writes it. `npx adsa-cli fix tokens-doc`
+- [ ] **Generate prop tables from types** — Docs freshness 1 → 5, brief for your agent. `npx adsa-cli fix prop-tables`
+- [ ] **Compile guide examples in CI** — Docs freshness 1 → 5, brief for your agent. `npx adsa-cli fix examples-check`
+- [ ] **Write page-level patterns** — Patterns 1 → 5, brief for your agent. `npx adsa-cli fix patterns-doc`
+- [ ] **Fail CI on an undocumented export** — Docs coverage 3 → 5, brief for your agent. `npx adsa-cli fix coverage-gate`
+- [ ] **Add keyboard and accessibility sections** — Accessibility documentation 3 → 5, brief for your agent. `npx adsa-cli fix a11y-docs`
 
 ---
 
-*From one designer to designers with love <3*
+*From one designer to all designers, with love <3*

@@ -28,6 +28,9 @@ import { byScore, detectColor, dim, green, red, setColor, yellow } from "../lib/
 
 const HELP = `adsa — agentic design system audit
 
+  npx adsa-cli <command>      without installing
+  adsa <command>              once the package is installed
+
 Usage
   adsa audit [dir]            Score the design system in dir (default: .)
   adsa search "<task>"        Which component do I need for this
@@ -174,7 +177,7 @@ function cmdAudit(dir, flags, out, json) {
             }
             out("");
             const todo = buildTodo(scored);
-            if (todo.length) out(dim(`Next: ${todo.slice(0, 3).map((i) => `adsa fix ${i.fix}`).join(", ")}`));
+            if (todo.length) out(dim(`Next: ${todo.slice(0, 3).map((i) => `npx adsa-cli fix ${i.fix}`).join(", ")}`));
             if (delta) {
                 const move = `Since the last run: ${delta.from} → ${delta.to} (${delta.delta >= 0 ? "+" : ""}${delta.delta})`;
                 out(delta.delta > 0 ? green(move) : delta.delta < 0 ? red(move) : dim(move));
@@ -330,7 +333,7 @@ function cmdDoctor(dir, flags, out, json) {
     agents ? add("agent-docs", "pass", `${agents.file} references ${facts.name}.`) : add("agent-docs", "fail", "No agent instructions mention this system.", "adsa fix agents-md");
     facts.machine.declaredServers.includes("adsa") || facts.machine.mcpInPackage
         ? add("mcp", "pass", "An MCP server is registered for this repository.")
-        : add("mcp", "warn", "No MCP server registered, so agents read files instead of querying.", "adsa fix mcp-config");
+        : add("mcp", "warn", "No MCP server registered, so agents read files instead of querying.", "npx adsa-cli fix mcp-config");
     facts.gaps.file ? add("gaps", "pass", `${facts.gaps.file} lists known absences.`) : add("gaps", "fail", "Nothing states what the system does not have.", "adsa fix gaps-file");
     facts.verification.workflows.length ? add("ci", "pass", `CI: ${facts.verification.workflows.join(", ")}.`) : add("ci", "warn", "No CI workflow found.", "adsa fix ci-workflow");
     facts.config.file ? add("config", "pass", `${facts.config.file} present.`) : add("config", "warn", "No adsa.config.json — detection is doing the guessing.");
@@ -353,7 +356,7 @@ function cmdBadge(dir, flags, out, json) {
     const root = resolve(dir || ".");
     const file = readJson(join(root, DIR, "score.json"));
     if (!file) {
-        out("No .adsa/score.json yet. Run `adsa audit` first.");
+        out("No .adsa/score.json yet. Run `npx adsa-cli audit` first.");
         return 1;
     }
     if (flags.json) {

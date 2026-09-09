@@ -16,4 +16,4 @@ jobs:
       # Fails when the score drops below the committed one, so documentation debt
       # cannot land quietly alongside a feature.
       - name: Score agent readiness
-        run: npx --yes adsa@latest audit --gate
+        run: npx --yes adsa-cli@latest audit --gate

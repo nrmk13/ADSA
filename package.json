@@ -1,16 +1,41 @@
 {
-    "name": "adsa",
+    "name": "adsa-cli",
     "version": "0.1.0",
     "description": "Score a design system on how well coding agents can use it, then fix what is missing.",
     "type": "module",
-    "bin": { "adsa": "./bin/adsa.mjs" },
-    "files": ["bin", "lib", "rubric", "templates", "skills"],
-    "engines": { "node": ">=20" },
+    "bin": {
+        "adsa": "./bin/adsa.mjs"
+    },
+    "files": [
+        "bin",
+        "lib",
+        "rubric",
+        "templates",
+        "skills"
+    ],
+    "engines": {
+        "node": ">=20"
+    },
     "scripts": {
         "test": "node --test test/*.test.mjs",
         "audit:self": "node bin/adsa.mjs audit example/design-system"
     },
-    "keywords": ["design-system", "agents", "ai", "documentation", "audit", "mcp"],
+    "keywords": [
+        "design-system",
+        "agents",
+        "ai",
+        "documentation",
+        "audit",
+        "mcp"
+    ],
     "license": "MIT",
-    "repository": { "type": "git", "url": "git+https://github.com/nrmk13/ADSA.git" }
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/nrmk13/ADSA.git"
+    },
+    "homepage": "https://adsa-landing.vercel.app",
+    "bugs": {
+        "url": "https://github.com/nrmk13/ADSA/issues"
+    },
+    "author": "Nazar Melnyk"
 }

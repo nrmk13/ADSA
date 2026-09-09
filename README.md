@@ -10,9 +10,9 @@ ADSA scores a design system out of 45 on how well a coding agent can use it, wri
 the report, and then fixes what it can.
 
 ```bash
-npx adsa audit            # score this repo, write the report
-npx adsa fix --all        # apply what can be applied, brief the rest
-npx adsa audit            # measure again
+npx adsa-cli audit            # score this repo, write the report
+npx adsa-cli fix --all        # apply what can be applied, brief the rest
+npx adsa-cli audit            # measure again
 ```
 
 That loop is the whole product. Everything below is detail.
@@ -54,7 +54,7 @@ the version checked out in front of them instead of reading files and guessing.
 | 8 | Verification | Can an agent check its own work before calling it done? |
 | 9 | Gap handling | What happens when the system genuinely does not have the thing? |
 
-`npx adsa rubric` prints what 1, 3 and 5 mean for each.
+`npx adsa-cli rubric` prints what 1, 3 and 5 mean for each.
 
 ## Commands
 

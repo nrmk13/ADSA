@@ -4,7 +4,7 @@
       "command": "npx",
       "args": [
         "--yes",
-        "adsa@latest",
+        "adsa-cli@latest",
         "mcp"
       ]
     }

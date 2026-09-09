@@ -18,14 +18,14 @@ An agent will produce plausible, wrong UI here more often than not.
 
 ## What to do, in order
 
-- [ ] **Document tokens as tables** — Tokens 3 → 5, adsa writes it. `adsa fix tokens-doc`
-- [ ] **Put the checks in CI** — Verification 3 → 5, adsa writes it. `adsa fix ci-workflow`
-- [ ] **List what the system does not have** — Gap handling 3 → 5, adsa writes it. `adsa fix gaps-file`
-- [ ] **Fail CI on an undocumented export** — Docs coverage 1 → 5, brief for your agent. `adsa fix coverage-gate`
-- [ ] **Generate prop tables from types** — Docs freshness 1 → 5, brief for your agent. `adsa fix prop-tables`
-- [ ] **Compile guide examples in CI** — Docs freshness 1 → 5, brief for your agent. `adsa fix examples-check`
-- [ ] **Write page-level patterns** — Patterns 1 → 5, brief for your agent. `adsa fix patterns-doc`
-- [ ] **Add keyboard and accessibility sections** — Accessibility documentation 1 → 5, brief for your agent. `adsa fix a11y-docs`
+- [ ] **Document tokens as tables** — Tokens 3 → 5, adsa writes it. `npx adsa-cli fix tokens-doc`
+- [ ] **Put the checks in CI** — Verification 3 → 5, adsa writes it. `npx adsa-cli fix ci-workflow`
+- [ ] **List what the system does not have** — Gap handling 3 → 5, adsa writes it. `npx adsa-cli fix gaps-file`
+- [ ] **Fail CI on an undocumented export** — Docs coverage 1 → 5, brief for your agent. `npx adsa-cli fix coverage-gate`
+- [ ] **Generate prop tables from types** — Docs freshness 1 → 5, brief for your agent. `npx adsa-cli fix prop-tables`
+- [ ] **Compile guide examples in CI** — Docs freshness 1 → 5, brief for your agent. `npx adsa-cli fix examples-check`
+- [ ] **Write page-level patterns** — Patterns 1 → 5, brief for your agent. `npx adsa-cli fix patterns-doc`
+- [ ] **Add keyboard and accessibility sections** — Accessibility documentation 1 → 5, brief for your agent. `npx adsa-cli fix a11y-docs`
 
 ---
 
