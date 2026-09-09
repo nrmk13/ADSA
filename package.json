@@ -1,6 +1,6 @@
 {
     "name": "adsa-cli",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Score a design system on how well coding agents can use it, then fix what is missing.",
     "type": "module",
     "bin": {

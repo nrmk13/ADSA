@@ -18,6 +18,7 @@ import { scan } from "../lib/scan.mjs";
 import { RUBRIC, score, scoreFile } from "../lib/score.mjs";
 import { buildTodo, html, markdown } from "../lib/report.mjs";
 import { badgeEndpoint, badgeMarkdown } from "../lib/badge.mjs";
+import { isDir } from "../lib/fsx.mjs";
 import { DIR, appendHistory, compare, readHistory, write } from "../lib/history.mjs";
 import { FIXES, applyFix } from "../lib/fix.mjs";
 import { evaluate, taskFile } from "../lib/eval.mjs";
@@ -222,8 +223,22 @@ function cmdFix(args, flags, out, json) {
         out("  your repository's own stack, and a generic codemod would do them badly.");
         return 0;
     }
-    const { root, config, facts } = load(flags.cwd || ".");
-    const ids = flags.all ? Object.keys(FIXES) : args;
+    // `audit <dir>` takes a directory, so `fix <dir>` has to as well. A positional
+    // that names a fix is a fix; anything else is where to write. Silently writing
+    // into the current folder because the argument was in the wrong place is the
+    // worst thing this command could do.
+    const named = args.filter((a) => a in FIXES);
+    const rest = args.filter((a) => !(a in FIXES));
+    if (rest.length > 1) {
+        out(`Unknown fix "${rest[1]}". Run \`npx adsa-cli fix --list\`.`);
+        return 1;
+    }
+    if (rest.length === 1 && !isDir(rest[0])) {
+        out(`Unknown fix "${rest[0]}", and no directory by that name. Run \`npx adsa-cli fix --list\`.`);
+        return 1;
+    }
+    const { root, config, facts } = load(flags.cwd || rest[0] || ".");
+    const ids = flags.all ? Object.keys(FIXES) : named;
     const actions = [];
     for (const id of ids) {
         try {

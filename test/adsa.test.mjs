@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, describe, it } from "node:test";
@@ -480,6 +480,22 @@ describe("cli", () => {
         const code = await run(["eval", "score", OUTPUT, "--system", EXAMPLE], out.io);
         assert.equal(code, 1);
         assert.match(out.text(), /PageHeader/);
+    });
+
+    it("writes a fix into the directory it was given, not the current one", async () => {
+        const dir = copyExample();
+        const parent = resolve(dir, "..");
+        const beside = readdirSync(parent).length;
+        rmSync(join(dir, "AGENTS.md"), { force: true });
+        assert.equal(await run(["fix", "agents-md", dir], capture().io), 0);
+        readFileSync(join(dir, "AGENTS.md"));
+        assert.equal(readdirSync(parent).length, beside, "and nothing lands beside it");
+    });
+
+    it("says so when a positional is neither a fix nor a directory", async () => {
+        const out = capture();
+        assert.equal(await run(["fix", "nonsense"], out.io), 1);
+        assert.match(out.text(), /Unknown fix "nonsense"/);
     });
 
     it("prints the rubric and the fix list", async () => {
