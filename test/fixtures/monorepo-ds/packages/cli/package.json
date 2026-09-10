@@ -1,0 +1,8 @@
+{
+    "name": "@acme/cli",
+    "version": "1.0.0",
+    "bin": {
+        "acme": "./bin/acme.mjs"
+    },
+    "files": ["bin"]
+}

@@ -18,11 +18,17 @@ rubric/rubric.json  the nine dimensions, 1/3/5 descriptors — the product's spi
 templates/          what fixes write, including briefs/
 skills/ds-audit/    the Claude Code skill that runs the whole audit
 example/            a deliberately unready design system, and what an agent built with it
-test/fixtures/      small fixtures for the other platforms (React Native, Swift, Kotlin/Compose)
+test/fixtures/      small fixtures: React Native, Swift, Kotlin/Compose, and a pnpm monorepo
 ```
 
 The landing page lives in its own repository; every number on it has to be
 reproducible with a command from this README.
+
+`scan` reads two roots: the package being audited and, when a monorepo declares that
+package as one of its workspaces, the repository around it. Components, guides and
+tokens are the package's; agent instructions, CI and the agent surface are the
+repository's. An ancestor that merely contains the directory declares nothing and
+lends nothing — see `resolveRepoRoot` in `lib/config.mjs`.
 
 Platform detection (`facts.platform` in `lib/scan.mjs`) decides web vs. React Native
 vs. Swift vs. Android from real evidence, and several checks branch on it —
@@ -52,6 +58,7 @@ branches, not by forking the pipeline.
 ```bash
 node --test 'test/*.test.mjs'
 node bin/adsa.mjs audit example/design-system   # must be 23/45 after fixes are applied
+node bin/adsa.mjs audit test/fixtures/monorepo-ds --out /tmp/adsa   # must be 39/45
 ```
 
 Check exit codes explicitly. A piped command hides a non-zero exit.

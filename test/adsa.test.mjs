@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 import { after, describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { loadConfig, resolveTarget } from "../lib/config.mjs";
+import { loadConfig, resolveRepoRoot, resolveTarget } from "../lib/config.mjs";
 import { scan } from "../lib/scan.mjs";
 import { RUBRIC, score, scoreFile } from "../lib/score.mjs";
 import { applyFix, FIXES, render, vars } from "../lib/fix.mjs";
@@ -22,6 +22,8 @@ const OUTPUT = resolve("example/agent-output");
 const RN_FIXTURE = resolve("test/fixtures/rn-ds");
 const SWIFT_FIXTURE = resolve("test/fixtures/swift-ds");
 const ANDROID_FIXTURE = resolve("test/fixtures/android-ds");
+const MONOREPO = resolve("test/fixtures/monorepo-ds");
+const MONO_PACKAGE = join(MONOREPO, "packages/core");
 const temps = [];
 
 function copyExample() {
@@ -517,5 +519,111 @@ describe("cli", () => {
         const fixes = capture();
         await run(["fix", "--list"], fixes.io);
         assert.match(fixes.text(), /writes a brief/);
+    });
+});
+
+/**
+ * A design system that lives in a workspace of a bigger repository. Everything an
+ * agent needs is present, but not where a single-package scan looks: the
+ * instructions and CI are at the root, the guides sit next to the components, and
+ * the MCP server and llms.txt are served by a sibling app rather than committed.
+ */
+describe("a design system inside a monorepo", () => {
+    const capture = () => {
+        let text = "";
+        return { io: { stdout: { write: (s) => (text += s) } }, text: () => text };
+    };
+    const outDir = () => {
+        const dir = mkdtempSync(join(tmpdir(), "adsa-out-"));
+        temps.push(dir);
+        return dir;
+    };
+    const loadPackage = (root) => {
+        const repoRoot = resolveRepoRoot(root) || root;
+        const config = loadConfig(root);
+        return { config, repoRoot, facts: scan(root, config, repoRoot) };
+    };
+
+    it("audits the package the workspace declares, not the root", () => {
+        const target = resolveTarget(MONOREPO);
+        assert.equal(target.dir, MONO_PACKAGE);
+        assert.match(target.note, /@acme\/mono-ui/);
+    });
+
+    it("reads agent instructions and CI from the repository that declares the package", () => {
+        const { facts } = loadPackage(MONO_PACKAGE);
+        assert.equal(facts.monorepo.package, "packages/core");
+        const agents = facts.agentFiles.find((a) => a.file === "AGENTS.md");
+        assert.equal(agents.scope, "repo");
+        assert.match(agents.label, /repository root/);
+        assert.deepEqual(facts.ci.workflows, [".github/workflows/ci.yml"]);
+        assert.equal(facts.verification.testScript, true, "the root script the workflow calls counts");
+    });
+
+    it("never borrows from an ancestor that does not declare the package", () => {
+        const dir = mkdtempSync(join(tmpdir(), "adsa-vendored-"));
+        temps.push(dir);
+        writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "unrelated", workspaces: ["apps/*"] }));
+        writeFileSync(join(dir, "AGENTS.md"), "# Not this design system's instructions\n");
+        mkdirSync(join(dir, "vendor", "ds"), { recursive: true });
+        writeFileSync(join(dir, "vendor", "ds", "package.json"), JSON.stringify({ name: "@vendored/ui" }));
+        assert.equal(resolveRepoRoot(join(dir, "vendor", "ds")), null);
+        const { facts } = loadPackage(join(dir, "vendor", "ds"));
+        assert.deepEqual(facts.agentFiles, [], "an enclosing repo is not the same as a declaring one");
+    });
+
+    it("reads guides that live next to the component they document", () => {
+        const { facts } = loadPackage(MONO_PACKAGE);
+        const button = facts.guides.find((g) => g.slug === "button");
+        assert.equal(button.path, "src/Button/Button.spec.md");
+        assert.equal(button.colocated, true);
+        assert.equal(facts.coverage.documented, facts.coverage.total);
+        assert.ok(
+            facts.guides.some((g) => g.path.includes("docs/theme-tokens.md")),
+            "and the repository's own docs folder, which a monorepo shares between packages",
+        );
+    });
+
+    it("counts the agent surface the repository serves, not only the one it commits", () => {
+        const { facts, config } = loadPackage(MONO_PACKAGE);
+        const m = facts.machine;
+        assert.ok(m.servedMcp.some((e) => e.includes("mcp-handler")), "the library that implements an MCP server");
+        assert.ok(m.servedMcp.some((e) => e.endsWith("app/mcp/route.ts")), "and the route that answers on it");
+        assert.ok(m.llmsTxt.some((f) => f.endsWith("llms.txt/route.ts")), "an llms.txt behind a route handler is still an llms.txt");
+        assert.deepEqual(m.siblingClis.map((c) => c.name), ["@acme/cli"]);
+        assert.equal(m.skills.length, 1, "a skill is a markdown file in a skills directory, whatever it is called");
+        assert.equal(m.commands.length, 1);
+        assert.equal(score(facts, config).dimensions.find((d) => d.id === "machine-surface").score, 5);
+    });
+
+    it("scores the whole system, and keeps scoring it", () => {
+        const { facts, config } = loadPackage(MONO_PACKAGE);
+        assert.equal(score(facts, config).total, 39);
+    });
+
+    it("prints which directories the run actually read", async () => {
+        const out = capture();
+        assert.equal(await run(["audit", MONOREPO, "--no-color", "--out", outDir()], out.io), 0);
+        assert.match(out.text(), /scanned: guides \.\.\/\.\.\/docs · source src · 2 colocated · repo-level files from monorepo-ds\//);
+    });
+
+    it("--workspace overrides detection", async () => {
+        const out = capture();
+        assert.equal(await run(["audit", MONOREPO, "--quiet", "--no-color", "--workspace", "@acme/mono-ui", "--out", outDir()], out.io), 0);
+        assert.match(out.text(), /@acme\/mono-ui.*\n.*--workspace/);
+    });
+
+    it("--workspace names the workspaces that do exist when it cannot find the one asked for", async () => {
+        const out = capture();
+        assert.equal(await run(["audit", MONOREPO, "--quiet", "--no-color", "--workspace", "nope", "--out", outDir()], out.io), 1);
+        assert.match(out.text(), /No workspace matches "nope"/);
+        assert.match(out.text(), /@acme\/mono-ui/);
+    });
+
+    it("--no-workspace audits the directory it was given", async () => {
+        const out = capture();
+        assert.equal(await run(["audit", MONOREPO, "--quiet", "--no-color", "--no-workspace", "--out", outDir()], out.io), 0);
+        assert.match(out.text(), /^monorepo-ds/);
+        assert.doesNotMatch(out.text(), /workspace: audited/);
     });
 });

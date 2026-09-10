@@ -11,9 +11,9 @@
  *   adsa badge                    the README badge for the committed score
  */
 import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { basename, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { loadConfig, resolveTarget } from "../lib/config.mjs";
+import { loadConfig, resolveRepoRoot, resolveTarget } from "../lib/config.mjs";
 import { scan } from "../lib/scan.mjs";
 import { RUBRIC, score, scoreFile } from "../lib/score.mjs";
 import { buildTodo, html, markdown } from "../lib/report.mjs";
@@ -53,13 +53,15 @@ Options
   --dry-run                   fix: show what would change, write nothing
   --system <dir>              eval score: the design system the project should use
   --cwd <dir>                 fix: the repository to change (default: .)
+  --workspace <name>          audit this workspace package, not the detected one
+  --no-workspace              audit the given directory as it stands
   --quiet                     Only the score line
   --full                      docs: keep the prose
   --color / --no-color        Force ANSI colour on or off (default: on for a terminal)
 `;
 
 export function parseArgs(argv) {
-    const flags = { out: null, json: false, gate: false, min: null, dryRun: false, system: null, quiet: false, list: false, all: false, cwd: null };
+    const flags = { out: null, json: false, gate: false, min: null, dryRun: false, system: null, quiet: false, list: false, all: false, cwd: null, workspace: null, noWorkspace: false };
     const positional = [];
     for (let i = 0; i < argv.length; i++) {
         const arg = argv[i];
@@ -72,6 +74,8 @@ export function parseArgs(argv) {
         else if (arg === "--color") flags.color = true;
         else if (arg === "--no-color") flags.color = false;
         else if (arg === "--all") flags.all = true;
+        else if (arg === "--no-workspace") flags.noWorkspace = true;
+        else if (arg === "--workspace") flags.workspace = argv[++i];
         else if (arg === "--out") flags.out = argv[++i];
         else if (arg === "--min") flags.min = Number(argv[++i]);
         else if (arg === "--system") flags.system = argv[++i];
@@ -83,12 +87,22 @@ export function parseArgs(argv) {
     return { command: positional[0], args: positional.slice(1), flags };
 }
 
+/** A bad --workspace is the reader's mistake to fix, not a reason to audit something else. */
+class TargetError extends Error {}
+
+/** Set once per run so every command resolves the same target the reader asked for. */
+let targetFlags = {};
+
 function load(dir) {
     const given = resolve(dir || ".");
-    const target = resolveTarget(given);
+    const target = resolveTarget(given, targetFlags);
+    if (target.error) throw new TargetError(target.error);
     const root = target.dir;
     const config = loadConfig(root);
-    const facts = scan(root, config);
+    // Agent instructions, CI and the agent surface belong to the repository that
+    // declares this package, not to the package directory.
+    const repoRoot = targetFlags.noWorkspace ? root : resolveRepoRoot(root) || root;
+    const facts = scan(root, config, repoRoot);
     facts.workspace = target.note;
     return { root, config, facts };
 }
@@ -109,6 +123,7 @@ export async function run(argv, io = {}) {
     const json = (v) => out(JSON.stringify(v, null, 2));
     const { command, args, flags } = parseArgs(argv);
     if (flags.color !== undefined) setColor(flags.color);
+    targetFlags = { workspace: flags.workspace, noWorkspace: flags.noWorkspace };
     if (flags.help || !command) {
         out(HELP);
         return 0;
@@ -118,6 +133,18 @@ export async function run(argv, io = {}) {
         return 1;
     }
 
+    try {
+        return await dispatch(command, args, flags, io, out, json);
+    } catch (error) {
+        if (error instanceof TargetError) {
+            out(red(error.message));
+            return 1;
+        }
+        throw error;
+    }
+}
+
+async function dispatch(command, args, flags, io, out, json) {
     switch (command) {
         case "audit":
             return cmdAudit(args[0], flags, out, json);
@@ -146,6 +173,18 @@ export async function run(argv, io = {}) {
     }
 }
 
+/**
+ * Which directories the run actually read. "Not found" and "never looked" print the
+ * same in a report, and a reader cannot tell a bad layout from a bad scan without it.
+ */
+function scannedLine(facts) {
+    const s = facts.scanned;
+    const parts = [`guides ${s.guides.length ? s.guides.join(", ") : "none found"}`, `source ${s.source.length ? s.source.join(", ") : "none found"}`];
+    if (s.colocatedGuides) parts.push(`${s.colocatedGuides} colocated`);
+    if (facts.monorepo) parts.push(`repo-level files from ${basename(facts.repoRoot)}/`);
+    return `  scanned: ${parts.join(" · ")}`;
+}
+
 /* ---------------------------------------------------------------- audit */
 
 function cmdAudit(dir, flags, out, json) {
@@ -167,7 +206,7 @@ function cmdAudit(dir, flags, out, json) {
     const delta = compare(previous, file);
 
     if (flags.json) {
-        json({ ...file, dimensions: scored.dimensions, delta });
+        json({ ...file, scanned: facts.scanned, dimensions: scored.dimensions, delta });
     } else {
         const band = scored.total / scored.max;
         // Same bands the report uses, so the terminal and the HTML never disagree.
@@ -175,6 +214,7 @@ function cmdAudit(dir, flags, out, json) {
         out(`${facts.name}${facts.version ? " " + facts.version : ""} — agent readiness ${paint(`${scored.total}/${scored.max}`)}`);
         if (facts.workspace) out(`  ${facts.workspace}`);
         if (!flags.quiet) {
+            out(dim(scannedLine(facts)));
             out("");
             for (const d of scored.dimensions) {
                 const bar = d.skipped ? dim("  skip") : byScore(d.score, "█".repeat(d.score)) + dim("·".repeat(5 - d.score));
@@ -365,10 +405,11 @@ function cmdDoctor(dir, flags, out, json) {
     const checks = [];
     const add = (id, status, message, fix) => checks.push({ id, status, message, ...(fix ? { fix } : {}) });
     const agents = facts.agentFiles.find((a) => a.mentionsPackage);
-    agents ? add("agent-docs", "pass", `${agents.file} references ${facts.name}.`) : add("agent-docs", "fail", "No agent instructions mention this system.", "adsa fix agents-md");
-    facts.machine.declaredServers.includes("adsa") || facts.machine.mcpInPackage
-        ? add("mcp", "pass", "An MCP server is registered for this repository.")
-        : add("mcp", "warn", "No MCP server registered, so agents read files instead of querying.", "npx adsa-cli fix mcp-config");
+    agents ? add("agent-docs", "pass", `${agents.label || agents.file} references ${facts.name}.`) : add("agent-docs", "fail", "No agent instructions mention this system.", "adsa fix agents-md");
+    const served = facts.machine.servedMcp || [];
+    if (served.length) add("mcp", "pass", `This repository serves an MCP server: ${served.slice(0, 2).join(", ")}.`);
+    else if (facts.machine.declaredServers.includes("adsa") || facts.machine.mcpInPackage) add("mcp", "pass", "An MCP server is registered for this repository.");
+    else add("mcp", "warn", "No MCP server registered, so agents read files instead of querying.", "npx adsa-cli fix mcp-config");
     facts.gaps.file ? add("gaps", "pass", `${facts.gaps.file} lists known absences.`) : add("gaps", "fail", "Nothing states what the system does not have.", "adsa fix gaps-file");
     facts.verification.workflows.length ? add("ci", "pass", `CI: ${facts.verification.workflows.join(", ")}.`) : add("ci", "warn", "No CI workflow found.", "adsa fix ci-workflow");
     facts.config.file ? add("config", "pass", `${facts.config.file} present.`) : add("config", "warn", "No adsa.config.json — detection is doing the guessing.");

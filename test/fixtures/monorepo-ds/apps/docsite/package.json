@@ -1,0 +1,9 @@
+{
+    "name": "@acme/docsite",
+    "private": true,
+    "version": "0.0.0",
+    "dependencies": {
+        "mcp-handler": "^1.1.0",
+        "next": "^15.0.0"
+    }
+}

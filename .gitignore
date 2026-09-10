@@ -4,3 +4,6 @@ node_modules/
 /report.html
 /report.md
 docs/
+
+# `docs/` above is this repo's own build output. A fixture's docs/ is test data.
+!test/fixtures/**/docs/

@@ -79,6 +79,39 @@ adsa rubric                 The nine dimensions in full
 ```
 
 `--json` everywhere. `--dry-run` on `fix`. `--gate --min <n>` on `audit`.
+`--workspace <name>` and `--no-workspace` on everything that reads a repository.
+
+## Monorepos
+
+A design system usually is not the repository — it is one package in it, and the
+things an agent needs are spread across both. `adsa` reads them where they are:
+
+| What | Where it looks |
+| :-- | :-- |
+| Components, guides, tokens | The package being audited |
+| `AGENTS.md`, `CLAUDE.md` | The package, then the repository that declares it |
+| CI workflows, root scripts | The repository |
+| MCP server, `llms.txt`, CLI, skills, commands | The repository, including sibling workspaces |
+
+"The repository that declares it" is exact: an ancestor counts only when its
+`workspaces` or `pnpm-workspace.yaml` actually lists this package. A design system
+vendored inside an unrelated repo inherits nothing, because it was promised nothing.
+
+Detection picks the workspace that looks most like the design system and says which
+one it picked. When it picks wrong, `--workspace @acme/ui` names one by hand and
+`--no-workspace` audits the directory exactly as given. Every run prints the
+directories it read, because *not found* and *never looked* are otherwise the same
+sentence — which is the mistake this tool exists to stop an agent from making.
+
+## Where guides can live
+
+`guidelines/`, `docs/components/`, `docs/`, a Swift package's `.docc` bundle — and
+next to the component itself, as `Button/Button.spec.md`, `Card/Card.docs.md` or
+`Field/Field.guide.md`. A colocated guide is a deliberate layout, not a missing one.
+
+An agent surface counts whether the repository commits it or serves it: an MCP
+endpoint behind a route handler, an `llms.txt` generated from the live docs, and a
+CLI published from a sibling package are all things an agent can query.
 
 ## The skill
 
@@ -94,7 +127,7 @@ gets it wrong, `adsa.config.json`:
 
 ```json
 {
-    "guides": ["guidelines"],
+    "guides": ["guidelines", "src/components"],
     "source": ["src/components"],
     "forbidden": ["lucide-react"],
     "skip": ["patterns"],
@@ -104,6 +137,9 @@ gets it wrong, `adsa.config.json`:
 
 `skip` is for dimensions that genuinely do not apply — a primitives-only library has
 no page patterns, and a skipped dimension lowers the maximum instead of the score.
+
+Naming `guides` yourself turns off the repository-level guide folder that a
+workspace package otherwise inherits: an explicit list is a complete answer.
 
 ## Platforms
 
@@ -156,12 +192,13 @@ node bin/adsa.mjs audit example/design-system        # 23/45
 fixed. `adsa eval score example/agent-output --system example/design-system` counts
 the three components it invented.
 
-Small fixtures for the other platforms live under `test/fixtures/` — a React Native
-library, a Swift package documented with DocC, and a Kotlin/Compose library — and
-run the same loop:
+Small fixtures live under `test/fixtures/` — a React Native library, a Swift package
+documented with DocC, a Kotlin/Compose library, and a pnpm monorepo whose guides sit
+next to its components — and run the same loop:
 
 ```bash
 node bin/adsa.mjs audit test/fixtures/swift-ds
+node bin/adsa.mjs audit test/fixtures/monorepo-ds        # 39/45, audited from the root
 ```
 
 ## Licence

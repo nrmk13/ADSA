@@ -1,0 +1,10 @@
+{
+    "name": "monorepo-ds",
+    "private": true,
+    "version": "0.0.0",
+    "scripts": {
+        "test": "vitest run",
+        "lint": "eslint .",
+        "check:docs": "node scripts/check-docs.mjs"
+    }
+}
