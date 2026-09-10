@@ -44,7 +44,7 @@ the version checked out in front of them instead of reading files and guessing.
 
 ## What a score means
 
-Twelve public design systems, audited with this rubric at the commit named in
+13 public design systems, audited with this rubric at the commit named in
 `rubric/reference.json`, on 2026-09-10:
 
 | Score | System | Repository | Package audited |
@@ -52,10 +52,11 @@ Twelve public design systems, audited with this rubric at the commit named in
 | 33/45 | Astryx · Meta | `facebook/astryx` | `@astryxdesign/core` |
 | 29/45 | Chakra UI | `chakra-ui/chakra-ui` | `@chakra-ui/react` |
 | 25/45 | React Spectrum · Adobe | `adobe/react-spectrum` | `@react-spectrum/s2` |
+| 25/45 | shadcn/ui | `shadcn-ui/ui` | `v4` |
 | 23/45 | HeroUI | `heroui-inc/heroui` | `@heroui/react` |
 | 23/45 | Polaris · Shopify | `Shopify/polaris` | `@shopify/polaris` |
+| 21/45 | BoardUI | `BoardUI/boardui` | `boardui@0.5.5` — npx boardui add + skill, in the starter repo |
 | 21/45 | Mantine | `mantinedev/mantine` | `@mantine/core` |
-| 21/45 | shadcn/ui | `shadcn-ui/ui` | `v4` |
 | 19/45 | Base UI · MUI | `mui/base-ui` | `@base-ui/react` |
 | 19/45 | Carbon · IBM | `carbon-design-system/carbon` | `@carbon/react` |
 | 17/45 | Primer · GitHub | `primer/react` | `@primer/react` |

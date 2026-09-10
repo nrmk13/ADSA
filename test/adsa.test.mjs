@@ -606,7 +606,7 @@ describe("a design system inside a monorepo", () => {
     it("prints which directories the run actually read", async () => {
         const out = capture();
         assert.equal(await run(["audit", MONOREPO, "--no-color", "--out", outDir()], out.io), 0);
-        assert.match(out.text(), /scanned: guides \.\.\/\.\.\/docs · source src · 2 colocated · repo-level files from monorepo-ds\//);
+        assert.match(out.text(), /scanned: guides \.\.\/\.\.\/docs, \.\.\/\.\.\/\.claude\/skills · source src · 2 colocated · repo-level files from monorepo-ds\//);
     });
 
     it("--workspace overrides detection", async () => {

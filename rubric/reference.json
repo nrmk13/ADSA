@@ -70,6 +70,28 @@
             }
         },
         {
+            "name": "shadcn/ui",
+            "org": "",
+            "repo": "shadcn-ui/ui",
+            "commit": "3ba91b1cc8",
+            "package": "v4",
+            "version": "0.1.0",
+            "packageDir": "apps/v4",
+            "total": 25,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 1,
+                "machine-surface": 5,
+                "docs-coverage": 3,
+                "docs-freshness": 3,
+                "tokens": 3,
+                "patterns": 5,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
             "name": "HeroUI",
             "org": "",
             "repo": "heroui-inc/heroui",
@@ -114,6 +136,28 @@
             }
         },
         {
+            "name": "BoardUI",
+            "org": "",
+            "repo": "BoardUI/boardui",
+            "commit": "3e76e28261",
+            "package": "boardui@0.5.5",
+            "packageDir": ".",
+            "via": "npx boardui add + skill, in the starter repo",
+            "total": 21,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 3,
+                "machine-surface": 3,
+                "docs-coverage": 1,
+                "docs-freshness": 1,
+                "tokens": 3,
+                "patterns": 5,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
             "name": "Mantine",
             "org": "",
             "repo": "mantinedev/mantine",
@@ -130,28 +174,6 @@
                 "docs-freshness": 1,
                 "tokens": 3,
                 "patterns": 3,
-                "a11y": 1,
-                "verification": 3,
-                "gap-handling": 1
-            }
-        },
-        {
-            "name": "shadcn/ui",
-            "org": "",
-            "repo": "shadcn-ui/ui",
-            "commit": "3ba91b1cc8",
-            "package": "v4",
-            "version": "0.1.0",
-            "packageDir": "apps/v4",
-            "total": 21,
-            "max": 45,
-            "dimensions": {
-                "agent-instructions": 1,
-                "machine-surface": 5,
-                "docs-coverage": 3,
-                "docs-freshness": 3,
-                "tokens": 3,
-                "patterns": 1,
                 "a11y": 1,
                 "verification": 3,
                 "gap-handling": 1

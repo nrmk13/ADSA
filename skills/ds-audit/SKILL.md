@@ -50,7 +50,7 @@ npx adsa-cli audit <path> --json     # the same, machine-readable
 ```
 
 **Show the tool's own output.** It prints a coloured bar per dimension, the band the
-score falls in, and where that score sits against twelve public design systems. Paste
+score falls in, and where that score sits against the public design systems in the reference set. Paste
 that block as it came out. Do not rebuild it as a markdown table: your table drops the
 bars, the band and the standing, and it is one retyping away from being wrong about a
 number the reader could otherwise have checked.
@@ -98,7 +98,7 @@ so every invention is a gap the system never declared.
 ## Phase 4 — Compare
 
 The reference set is measured, not remembered: `rubric/reference.json` in the tool
-holds twelve public design systems audited with this rubric at a named commit, and
+holds every public design system measured with this rubric, at a named commit, and
 the terminal already told the reader where their score sits in it. Quote that, and
 reproduce any figure you are unsure of with `npx adsa-cli audit <clone>`.
 
