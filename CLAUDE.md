@@ -33,7 +33,7 @@ re-exports (`export * as Dialog from …`) where it ships an aggregate package.
 
 `lib/badge.mjs` holds the only band table: the terminal, the report, the markdown and
 the badge all call `band()`. The thresholds are anchored to `rubric/reference.json` —
-every public design system measured, at a named commit, running 13 to 33 out of 45 —
+every public design system measured, at a named commit, running 13 to 35 out of 45 —
 so a change to the bands has to argue with that file. Regenerate it only with a run
 over fresh clones, and record the commits.
 

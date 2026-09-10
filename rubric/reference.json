@@ -11,14 +11,14 @@
             "package": "@astryxdesign/core",
             "version": "0.5.4",
             "packageDir": "packages/core",
-            "total": 33,
+            "total": 35,
             "max": 45,
             "dimensions": {
                 "agent-instructions": 3,
                 "machine-surface": 5,
                 "docs-coverage": 3,
                 "docs-freshness": 3,
-                "tokens": 3,
+                "tokens": 5,
                 "patterns": 5,
                 "a11y": 3,
                 "verification": 5,
@@ -246,28 +246,6 @@
             }
         },
         {
-            "name": "Radix Primitives",
-            "org": "WorkOS",
-            "repo": "radix-ui/primitives",
-            "commit": "f7ecd5ab16",
-            "package": "radix-ui",
-            "version": "1.6.7",
-            "packageDir": "packages/react/radix-ui",
-            "total": 13,
-            "max": 45,
-            "dimensions": {
-                "agent-instructions": 3,
-                "machine-surface": 1,
-                "docs-coverage": 1,
-                "docs-freshness": 1,
-                "tokens": 1,
-                "patterns": 1,
-                "a11y": 1,
-                "verification": 3,
-                "gap-handling": 1
-            }
-        },
-        {
             "name": "Untitled UI React",
             "org": "",
             "repo": "untitleduico/react",
@@ -275,6 +253,28 @@
             "package": "@untitledui/react",
             "version": "0.0.0",
             "packageDir": ".",
+            "total": 15,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 3,
+                "machine-surface": 1,
+                "docs-coverage": 1,
+                "docs-freshness": 1,
+                "tokens": 3,
+                "patterns": 1,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
+            "name": "Radix Primitives",
+            "org": "WorkOS",
+            "repo": "radix-ui/primitives",
+            "commit": "f7ecd5ab16",
+            "package": "radix-ui",
+            "version": "1.6.7",
+            "packageDir": "packages/react/radix-ui",
             "total": 13,
             "max": 45,
             "dimensions": {

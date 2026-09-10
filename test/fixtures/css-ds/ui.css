@@ -1,0 +1,33 @@
+:root {
+    --colour-brand: #4f7cff;
+    --colour-danger: #e5484d;
+    --colour-surface: #16161d;
+    --space-2: 8px;
+    --space-3: 16px;
+    --radius-md: 10px;
+    --duration-fast: 120ms;
+}
+
+@theme {
+    --font-body: system-ui, sans-serif;
+    @keyframes fade {
+        from { opacity: 0 }
+    }
+}
+
+.btn { padding: var(--space-2) var(--space-3); transition: background var(--duration-fast) }
+.btn--primary { background: var(--colour-brand) }
+.btn--danger { background: var(--colour-danger) }
+.btn.is-disabled { opacity: .5 }
+.card { background: var(--colour-surface); border-radius: var(--radius-md) }
+.card__title { font-weight: 600 }
+.card-footer { padding: var(--space-2) }
+.field { display: grid }
+.field__label { font-size: 13px }
+.text-input { padding: var(--space-2) }
+.dialog { position: fixed }
+.badge { padding: 0 var(--space-2) }
+.mt-2 { margin-top: var(--space-2) }
+.text-sm { font-size: 13px }
+.is-open { display: block }
+.toolbar { --toolbar-height: 32px; height: var(--toolbar-height) }

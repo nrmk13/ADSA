@@ -49,7 +49,7 @@ the version checked out in front of them instead of reading files and guessing.
 
 | Score | System | Repository | Package audited |
 | :-- | :-- | :-- | :-- |
-| 33/45 | Astryx · Meta | `facebook/astryx` | `@astryxdesign/core` |
+| 35/45 | Astryx · Meta | `facebook/astryx` | `@astryxdesign/core` |
 | 29/45 | Chakra UI | `chakra-ui/chakra-ui` | `@chakra-ui/react` |
 | 25/45 | React Spectrum · Adobe | `adobe/react-spectrum` | `@react-spectrum/s2` |
 | 25/45 | shadcn/ui | `shadcn-ui/ui` | `v4` |
@@ -60,12 +60,12 @@ the version checked out in front of them instead of reading files and guessing.
 | 19/45 | Base UI · MUI | `mui/base-ui` | `@base-ui/react` |
 | 19/45 | Carbon · IBM | `carbon-design-system/carbon` | `@carbon/react` |
 | 17/45 | Primer · GitHub | `primer/react` | `@primer/react` |
+| 15/45 | Untitled UI React | `untitleduico/react` | `@untitledui/react` |
 | 13/45 | Radix Primitives · WorkOS | `radix-ui/primitives` | `radix-ui` |
-| 13/45 | Untitled UI React | `untitleduico/react` | `@untitledui/react` |
 
 Two things follow, and both are the point of publishing this table.
 
-**45 is nobody's score.** The best-documented public design system reaches 33. The
+**45 is nobody's score.** The best-documented public design system reaches 35. The
 bands are anchored to that measured field rather than to a wish: **31+ agent-ready**,
 **24–30 good foundation**, **15–23 gaps to address**, **below 15 not ready**. A system
 in the low twenties is in the middle of the field, not failing.
@@ -76,6 +76,38 @@ on an excellent website scores low here and may well be the better system for pe
 
 Every row is reproducible: clone the repository and run `npx adsa-cli audit <clone>`.
 `npx adsa-cli reference` prints this table from the tool.
+
+## Systems that are not component libraries
+
+Plenty of design systems are not a package of React components with a guide per
+component, and that is a decision rather than an omission — a stylesheet and a class
+vocabulary survives contact with engineers on four different stacks, which is why
+small teams keep choosing it.
+
+**A stylesheet is read as a surface.** When nothing is importable, the class
+vocabulary is the API: the classes in the shipped stylesheet are counted as the
+components, elements and modifiers fold into the block they belong to
+(`card__title`, `card-footer` → `card`), utilities and state classes are left out, and
+a class counts as documented when an example applies it — `.dialog` in prose, or
+`class="dialog"` in an HTML block.
+
+**Examples are read in the language they are written in.** HTML, CSS, Vue, Svelte and
+Astro blocks count, alongside TypeScript, Swift and Kotlin.
+
+**Tokens are read from the stylesheet, not from a heading.** Custom properties
+declared at the root — including inside Tailwind's `@theme` — are named decisions in
+the format the browser itself reads, exactly as an `.xcassets` catalog or an Android
+`colors.xml` already was. A page documenting them counts whether or not its title
+contains the word "token", and the hex inside `--brand: #0af` is a definition, not a
+raw value to be penalised.
+
+**A dimension that cannot apply is dropped from the maximum.** A repository with no
+importable surface and no component source files at all is not asked whether every
+component has a guide: `docs-coverage` and `docs-freshness` are skipped and the score
+is out of 35, and the comparison against the field is recomputed on the same seven
+dimensions. This only happens when the shape is unambiguous — a repository full of
+`.tsx` files where the scan found no exports is this tool failing, and it keeps the
+low score and says so on the `scanned:` line.
 
 ## The nine dimensions
 

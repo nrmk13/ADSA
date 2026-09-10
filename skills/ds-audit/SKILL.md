@@ -104,7 +104,14 @@ reproduce any figure you are unsure of with `npx adsa-cli audit <clone>`.
 
 Two things to say out loud, because a reader will otherwise assume the opposite:
 
-- **45 is nobody's score.** The best-documented public system measured reaches 33.
+- **45 is nobody's score.** The best-documented public system measured reaches 35.
+- **Not every system is a component library.** A stylesheet with a class vocabulary is
+  a deliberate shape: the tool reads its classes as the surface and its HTML examples
+  as examples. If the `scanned:` line says `classes from <file>`, that is what happened,
+  and the coverage number is about classes.
+- **A score out of 35 is not a broken run.** When a repository has no importable
+  surface at all, the two dimensions that assume one are skipped and the maximum drops.
+  Say which dimensions were skipped and why; do not report it as 35/45.
   A number in the twenties is the middle of the field, not a failing grade.
 - **This is not a ranking of design systems.** It measures what a coding agent can
   find in the repository. A system whose documentation lives on an excellent website

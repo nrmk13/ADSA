@@ -13,7 +13,7 @@ import { dense } from "../lib/dense.mjs";
 import { findGuide, handleMessage, searchGuides, TOOLS } from "../lib/mcp.mjs";
 import { evaluate, taskFile } from "../lib/eval.mjs";
 import { band, badgeColor, badgeEndpoint, badgeMarkdown } from "../lib/badge.mjs";
-import { REFERENCE, standing } from "../lib/reference.mjs";
+import { REFERENCE, scoredIds, standing } from "../lib/reference.mjs";
 import { compare } from "../lib/history.mjs";
 import { byScore, detectColor, green, setColor } from "../lib/color.mjs";
 import { html, markdown } from "../lib/report.mjs";
@@ -25,6 +25,8 @@ const RN_FIXTURE = resolve("test/fixtures/rn-ds");
 const SWIFT_FIXTURE = resolve("test/fixtures/swift-ds");
 const ANDROID_FIXTURE = resolve("test/fixtures/android-ds");
 const MONOREPO = resolve("test/fixtures/monorepo-ds");
+const CSS_FIXTURE = resolve("test/fixtures/css-ds");
+const TOKENS_FIXTURE = resolve("test/fixtures/tokens-ds");
 const MONO_PACKAGE = join(MONOREPO, "packages/core");
 const temps = [];
 
@@ -863,5 +865,102 @@ describe("the example, in its three states", () => {
         assert.ok(facts.patterns.rich >= 4, "four patterns with states and traps");
         assert.ok(facts.verification.docChecks, "the documentation checks run in CI");
         assert.ok(facts.gaps.reportCommand, "an agent can report a new gap");
+    });
+});
+
+/**
+ * The shape a small team lands on when it has engineers on four stacks and no
+ * designer: a stylesheet, a class vocabulary and HTML examples. It is a deliberate
+ * choice, not a half-built component library, and every one of these tests is a thing
+ * the tool used to get wrong about it.
+ */
+describe("a design system that is a stylesheet, not a component library", () => {
+    const { config, facts } = load(CSS_FIXTURE);
+    const scored = score(facts, config);
+    const dim = (id) => scored.dimensions.find((d) => d.id === id);
+
+    it("reads the class vocabulary as the surface a consumer uses", () => {
+        assert.equal(facts.shape.kind, "classes");
+        assert.deepEqual(
+            facts.components.map((c) => c.slug),
+            ["badge", "btn", "card", "dialog", "field", "text-input", "toolbar"],
+        );
+        assert.equal(facts.components[0].selector, ".badge");
+    });
+
+    it("folds elements, modifiers and states into the block they belong to", () => {
+        const slugs = facts.components.map((c) => c.slug);
+        for (const notAComponent of ["card__title", "card-footer", "btn--primary", "is-open", "is-disabled"]) {
+            assert.equal(slugs.includes(notAComponent), false, `${notAComponent} is not a component`);
+        }
+    });
+
+    it("does not mistake utilities for components", () => {
+        const slugs = facts.components.map((c) => c.slug);
+        assert.equal(slugs.includes("mt-2"), false);
+        assert.equal(slugs.includes("text-sm"), false);
+        // `text-input` survives the same filter: a component whose name starts like a utility.
+        assert.equal(slugs.includes("text-input"), true);
+    });
+
+    it("counts HTML examples as examples", () => {
+        assert.ok(facts.freshness.blocks >= 4, `found ${facts.freshness.blocks} code blocks`);
+        const buttons = facts.guides.find((g) => g.slug === "buttons");
+        assert.equal(buttons.blocks, 1);
+    });
+
+    it("finds a class documented by the example that applies it", () => {
+        assert.equal(facts.coverage.total, 7);
+        assert.ok(facts.coverage.documented >= 4);
+        assert.ok(facts.coverage.missing.includes(".dialog"), "names the class the way a reader would type it");
+    });
+
+    it("reads token documentation whose page is not called tokens", () => {
+        assert.deepEqual(facts.tokens.docs, ["docs/values.md"]);
+        assert.equal(dim("tokens").score, 5);
+    });
+
+    it("does not count the hex inside a token definition as a raw hex value", () => {
+        assert.equal(facts.tokens.hexCount, 0);
+    });
+
+    it("reads named tokens out of the stylesheet, the way it already read them out of an asset catalog", () => {
+        const source = facts.tokens.source;
+        assert.equal(source.kind, "CSS custom properties");
+        assert.ok(source.names.includes("--colour-brand"));
+        // Declared inside `@theme`, which holds a nested `@keyframes`.
+        assert.ok(source.names.includes("--font-body") || source.count > 7);
+        // Declared inside a component's own class: a local variable, not a token.
+        assert.equal(source.names.includes("--toolbar-height"), false);
+    });
+});
+
+describe("a repository with no component surface at all", () => {
+    const { config, facts } = load(TOKENS_FIXTURE);
+    const scored = score(facts, config);
+
+    it("tells a different shape apart from a failed scan", () => {
+        assert.equal(facts.shape.kind, "docs-only");
+        assert.equal(facts.shape.componentFiles, 0);
+    });
+
+    it("drops the dimensions that cannot apply out of the maximum", () => {
+        const skipped = scored.dimensions.filter((d) => d.skipped).map((d) => d.id);
+        assert.deepEqual(skipped, ["docs-coverage", "docs-freshness"]);
+        assert.equal(scored.max, 35);
+        assert.ok(scored.dimensions.find((d) => d.id === "docs-coverage").evidence[0].includes("does not apply"));
+    });
+
+    it("compares that score against the field on the same dimensions, not against 45", () => {
+        const field = standing(scored.total, scoredIds(scored));
+        assert.match(field.sentence, /\/35/);
+        assert.match(field.sentence, /7 dimensions that apply here/);
+        assert.ok(field.best.comparable < REFERENCE.systems[0].total);
+    });
+
+    it("keeps the low score when components exist but the scan found none", () => {
+        const { config: c, facts: f } = load(resolve("example/design-system-as-found"));
+        assert.equal(f.shape.kind, "components");
+        assert.equal(score(f, c).max, 45);
     });
 });

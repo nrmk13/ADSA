@@ -1,0 +1,3 @@
+# Colour
+
+Semantic names only.

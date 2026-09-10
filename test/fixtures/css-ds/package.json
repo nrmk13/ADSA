@@ -1,0 +1,9 @@
+{
+    "name": "@fixture/styles",
+    "version": "1.0.0",
+    "exports": {
+        ".": "./ui.css",
+        "./ui.css": "./ui.css"
+    },
+    "style": "./ui.css"
+}

@@ -1,0 +1,7 @@
+{
+    "name": "@fixture/tokens",
+    "version": "1.0.0",
+    "exports": {
+        ".": "./tokens.json"
+    }
+}

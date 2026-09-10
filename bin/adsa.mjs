@@ -21,7 +21,7 @@ import { scan } from "../lib/scan.mjs";
 import { RUBRIC, score, scoreFile } from "../lib/score.mjs";
 import { buildTodo, html, markdown } from "../lib/report.mjs";
 import { band, badgeEndpoint, badgeMarkdown } from "../lib/badge.mjs";
-import { REFERENCE, standing } from "../lib/reference.mjs";
+import { REFERENCE, scoredIds, standing } from "../lib/reference.mjs";
 import { exists, isDir } from "../lib/fsx.mjs";
 import { DIR, appendHistory, compare, readHistory, write } from "../lib/history.mjs";
 import { FIXES, applyFix } from "../lib/fix.mjs";
@@ -189,7 +189,11 @@ async function dispatch(command, args, flags, io, out, json) {
  */
 function scannedLine(facts) {
     const s = facts.scanned;
-    const parts = [`guides ${s.guides.length ? s.guides.join(", ") : "none found"}`, `source ${s.source.length ? s.source.join(", ") : "none found"}`];
+    // A stylesheet system has no source directory and is not supposed to: naming the
+    // file the classes were read from is the honest version of "source none found".
+    const source = s.shape === "classes" ? `classes from ${s.stylesheets.join(", ")}` : `source ${s.source.length ? s.source.join(", ") : "none found"}`;
+    const parts = [`guides ${s.guides.length ? s.guides.join(", ") : "none found"}`, source];
+    if (s.shape === "docs-only") parts.push("no component surface: two dimensions do not apply");
     if (s.colocatedGuides) parts.push(`${s.colocatedGuides} colocated`);
     if (facts.monorepo) parts.push(`repo-level files from ${basename(facts.repoRoot)}/`);
     return `  scanned: ${parts.join(" · ")}`;
@@ -286,7 +290,7 @@ function cmdAudit(dir, flags, out, json) {
                 out(delta.delta > 0 ? green(move) : delta.delta < 0 ? red(move) : dim(move));
             }
             // A score out of 45 answers nothing until you know what 45 is worth.
-            out(dim(standing(scored.total).sentence));
+            out(dim(standing(scored.total, scoredIds(scored)).sentence));
         }
     }
 
