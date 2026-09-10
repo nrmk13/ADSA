@@ -1,0 +1,31 @@
+name: Documentation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Every promise the guides make, checked against the source. Each of these has
+      # a test that breaks it on purpose: test/checks.test.mjs.
+      - name: Every importable component has a guide
+        run: npm run check:guidelines
+      - name: Prop tables match the types
+        run: npm run check:props
+      - name: Every guide states its keyboard contract
+        run: npm run check:a11y
+      - name: Guide examples compile against the package
+        run: npm run check:examples
+
+      - name: Unit tests
+        run: npm test
+      - name: Stories render, with accessibility assertions (axe)
+        run: npm run test:storybook

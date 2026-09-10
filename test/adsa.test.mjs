@@ -837,3 +837,31 @@ describe("what a score means", () => {
         assert.match(out.text(), /Not a ranking of design systems/);
     });
 });
+
+/**
+ * The three states of one design system, which are the only numbers on the landing
+ * page and in the README. They are asserted here so a change to a detector cannot
+ * quietly make a published figure wrong.
+ */
+describe("the example, in its three states", () => {
+    const total = (dir) => {
+        const { config, facts } = load(resolve(dir));
+        return score(facts, config).total;
+    };
+
+    it("as found: 11/45", () => assert.equal(total("example/design-system-as-found"), 11));
+    it("after `fix --all`: 23/45", () => assert.equal(total("example/design-system"), 23));
+    it("after the briefs are executed: 45/45", () => assert.equal(total("example/design-system-ready"), 45));
+
+    it("45/45 is earned by files that exist, not by a detector being kind", () => {
+        const { facts } = load(resolve("example/design-system-ready"));
+        assert.equal(facts.coverage.documented, facts.coverage.total);
+        assert.equal(facts.freshness.unknownCount, 0);
+        assert.ok(facts.freshness.guidesGenerated >= 6, "prop tables are generated");
+        assert.equal(facts.tokens.rawPaletteCount, 0, "no raw palette classes in any example");
+        assert.ok(facts.a11y.ratio >= 0.9, "every guide states its keyboard contract");
+        assert.ok(facts.patterns.rich >= 4, "four patterns with states and traps");
+        assert.ok(facts.verification.docChecks, "the documentation checks run in CI");
+        assert.ok(facts.gaps.reportCommand, "an agent can report a new gap");
+    });
+});

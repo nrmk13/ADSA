@@ -1,0 +1,59 @@
+{
+    "note": "The keyboard and accessibility contract per component, written once and generated into every guide by scripts/a11y.mjs. A component missing from this file fails the a11y check: silence is not an answer.",
+    "components": {
+        "button": {
+            "role": "button",
+            "name": "The text inside it. An icon-only button has no name in this system, which is why there is not one.",
+            "keys": [["Enter / Space", "Activates it"], ["Tab", "Moves to it; a disabled button is skipped"]],
+            "focus": "Native. Never remove the focus ring: it is a token, not a style.",
+            "notes": "`isLoading` sets `aria-busy` and leaves the button focusable, so a person is not thrown out of the page while it works."
+        },
+        "card": {
+            "role": "section (none implied)",
+            "name": "Not required. Give the card a heading inside CardHeader instead.",
+            "keys": [],
+            "focus": "Not focusable, and must not be made clickable as a whole: put the control inside it.",
+            "notes": "Nothing here is interactive, which is the honest answer rather than an omission."
+        },
+        "input": {
+            "role": "textbox",
+            "name": "The `label` prop, which is required.",
+            "keys": [["Tab", "Moves to it"], ["Escape", "Nothing — this is not a combobox"]],
+            "focus": "Native. Focus stays on the field when `isInvalid` turns on.",
+            "notes": "`hint` is wired to the field, so a screen reader reads the error with the field rather than after it."
+        },
+        "table": {
+            "role": "table",
+            "name": "Give it a `<caption>`, or an `aria-label` when the heading above it already says what it is.",
+            "keys": [["Tab", "Moves through the interactive cells only, not through every cell"]],
+            "focus": "Cells are not focusable. Controls inside them are.",
+            "notes": "Sorting controls are buttons in the header cells and must carry `aria-sort` on the cell."
+        },
+        "modal": {
+            "role": "dialog",
+            "name": "The `title` prop, which is required.",
+            "keys": [["Escape", "Calls onClose"], ["Tab / Shift+Tab", "Cycles inside the dialog and does not leave it"]],
+            "focus": "Moves into the dialog on open and returns to the control that opened it on close.",
+            "notes": "The page behind is inert while it is open. A modal that does not trap focus is a bug, not a variant."
+        },
+        "badge": {
+            "role": "none — it is text",
+            "name": "Not required; the badge's own words are the name.",
+            "keys": [],
+            "focus": "Not focusable. If it needs to be, it is a Button.",
+            "notes": "Tone is never the only signal: the word says what the colour says."
+        },
+        "design-tokens": {
+            "role": "n/a",
+            "name": "n/a",
+            "keys": [],
+            "focus": "n/a",
+            "notes": "Contrast is a token decision: every `text-*` token is checked against every `bg-*` token it is allowed to sit on, and the pairs that fail are not exported."
+        },
+        "patterns/list-page": { "role": "n/a", "name": "n/a", "keys": [["Tab", "Filters, then the table, then pagination — in that order"]], "focus": "After a filter changes, focus stays on the filter; announce the new row count in a live region.", "notes": "The empty state is a heading and a button, not an image alone." },
+        "patterns/settings-form": { "role": "n/a", "name": "n/a", "keys": [["Enter", "Submits from any field"]], "focus": "On a failed save, focus moves to the first invalid field.", "notes": "The error summary is a live region above the form and links to each field." },
+        "patterns/detail-view": { "role": "n/a", "name": "n/a", "keys": [["Tab", "Header actions, then the content, then the side panel"]], "focus": "Loading a new record moves focus to the record's heading.", "notes": "The heading is the record's name, so a screen reader announces which record opened." },
+        "patterns/empty-state": { "role": "n/a", "name": "n/a", "keys": [], "focus": "The primary action is the first thing after the heading in the DOM.", "notes": "Never a bare illustration: an empty state with no text is silent to a screen reader." },
+        "patterns/index": { "role": "n/a", "name": "n/a", "keys": [], "focus": "n/a", "notes": "Each pattern below carries its own keyboard contract." }
+    }
+}

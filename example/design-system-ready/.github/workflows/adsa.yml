@@ -1,0 +1,19 @@
+name: Agent readiness
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Fails when the score drops below the committed one, so documentation debt
+      # cannot land quietly alongside a feature.
+      - name: Score agent readiness
+        run: npx --yes adsa-cli@latest audit --gate

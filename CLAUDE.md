@@ -17,7 +17,9 @@ lib/eval.mjs        the experiment: task file, then measure what an agent built
 rubric/rubric.json  the nine dimensions, 1/3/5 descriptors — the product's spine
 templates/          what fixes write, including briefs/
 skills/ds-audit/    the Claude Code skill that runs the whole audit
-example/            a deliberately unready design system, and what an agent built with it
+example/            one design system in three states: as-found 11/45, after `fix --all`
+                    23/45, fully documented 45/45 — plus what an agent built with the first.
+                    The three totals are asserted in the tests and published on the site.
 test/fixtures/      small fixtures: React Native, Swift, Kotlin/Compose, and a pnpm monorepo
 ```
 

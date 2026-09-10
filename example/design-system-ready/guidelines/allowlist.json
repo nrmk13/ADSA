@@ -1,0 +1,6 @@
+{
+    "note": "Exports that genuinely need no guide of their own. Every entry has a reason, and scripts/guidelines.mjs prints the list on every run so it cannot grow quietly.",
+    "exports": {
+        "styles": "The stylesheet, not a component. Documented in design-tokens.md."
+    }
+}

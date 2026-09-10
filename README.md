@@ -215,16 +215,27 @@ not assessed — it never guesses a number.
 
 ## Try it
 
+One design system, in the three states of the loop. All three are in the repository,
+and all three numbers are a command away:
+
 ```bash
 git clone https://github.com/nrmk13/ADSA && cd ADSA
-node bin/adsa.mjs audit example/design-system        # 9/45
-node bin/adsa.mjs fix --all --cwd example/design-system
-node bin/adsa.mjs audit example/design-system        # 23/45
+node bin/adsa.mjs audit example/design-system-as-found   # 11/45 — as most systems are
+node bin/adsa.mjs audit example/design-system            # 23/45 — after `fix --all`
+node bin/adsa.mjs audit example/design-system-ready      # 45/45 — after the briefs
 ```
 
-`example/agent-output` is what an agent built against that system before it was
-fixed. `adsa eval score example/agent-output --system example/design-system` counts
-the three components it invented.
+The middle state is what the tool writes for you: instructions, an MCP entry, a gap
+list, a CI workflow. The last state is what it cannot write for you — generated prop
+tables, keyboard contracts, page patterns, and checks in CI that fail when a guide
+starts lying. `example/design-system-ready/scripts` is that work, done: four checks,
+each with a test in `test/checks.test.mjs` that breaks the docs on purpose and asserts
+the check goes red. It is the only 45/45 anywhere, and it is a six-component system
+with a person's whole afternoon in it.
+
+`example/agent-output` is what an agent built against the first state.
+`adsa eval score example/agent-output --system example/design-system` counts the three
+components it invented.
 
 Small fixtures live under `test/fixtures/` — a React Native library, a Swift package
 documented with DocC, a Kotlin/Compose library, and a pnpm monorepo whose guides sit

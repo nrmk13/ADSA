@@ -1,0 +1,17 @@
+{
+    "name": "@acme/ui",
+    "version": "1.4.0",
+    "description": "A small component library, documented the way most component libraries are documented.",
+    "type": "module",
+    "exports": {
+        "./button": "./dist/button.js",
+        "./card": "./dist/card.js",
+        "./input": "./dist/input.js",
+        "./table": "./dist/table.js",
+        "./modal": "./dist/modal.js",
+        "./badge": "./dist/badge.js",
+        "./styles": "./dist/styles.css"
+    },
+    "peerDependencies": { "react": "^19", "tailwindcss": "^4" },
+    "devDependencies": { "typescript": "^5.6" }
+}
