@@ -49,6 +49,23 @@ npx adsa-cli audit <path>            # score, report, .adsa/score.json
 npx adsa-cli audit <path> --json     # the same, machine-readable
 ```
 
+**Show the tool's own output.** It prints a coloured bar per dimension, the band the
+score falls in, and where that score sits against twelve public design systems. Paste
+that block as it came out. Do not rebuild it as a markdown table: your table drops the
+bars, the band and the standing, and it is one retyping away from being wrong about a
+number the reader could otherwise have checked.
+
+The run opens `report.html` and prints its `file://` link. Do not ask whether to open
+it, and do not offer to fix everything before the reader has read anything — the
+report is the deliverable, and what to fix first is a decision it exists to inform.
+
+**Check the scan line before you believe the score.** `scanned:` says which directories
+were read and which package was picked out of a monorepo. If the guides say `none
+found` and you can see a documentation site in the repository, the audit is measuring
+the wrong folder: fix it with `--workspace <name>` or a `guides` entry in
+`adsa.config.json`, and re-run before reporting anything. A wrong scope reads as an
+undocumented system, and that is the one mistake that makes the whole audit worthless.
+
 Read `.adsa/report.md` and the evidence under every dimension. The score is a
 starting point, not the finding.
 
@@ -80,8 +97,21 @@ so every invention is a gap the system never declared.
 
 ## Phase 4 — Compare
 
-Say where the system stands against systems that have done this work, by trait, not
-by vibe. The ones worth checking, and what each is known for:
+The reference set is measured, not remembered: `rubric/reference.json` in the tool
+holds twelve public design systems audited with this rubric at a named commit, and
+the terminal already told the reader where their score sits in it. Quote that, and
+reproduce any figure you are unsure of with `npx adsa-cli audit <clone>`.
+
+Two things to say out loud, because a reader will otherwise assume the opposite:
+
+- **45 is nobody's score.** The best-documented public system measured reaches 33.
+  A number in the twenties is the middle of the field, not a failing grade.
+- **This is not a ranking of design systems.** It measures what a coding agent can
+  find in the repository. A system whose documentation lives on an excellent website
+  scores low here and may be the better design system for people.
+
+Then say where the system stands by trait, not by vibe. The ones worth checking, and
+what each is known for:
 
 | System | What to look at |
 | :-- | :-- |
@@ -111,6 +141,9 @@ Then say what to do first, in one sentence, and stop. Do not pad.
 
 ## Phase 6 — Fix
 
+Only after the reader has seen the findings, and one fix at a time unless they ask
+for more. `fix --all` is theirs to run, not yours to propose as the first move.
+
 ```bash
 npx adsa-cli fix --list        # what is automatic and what is a brief
 npx adsa-cli fix agents-md     # writes files
@@ -126,6 +159,8 @@ After the fixes: `npx adsa-cli audit` again. The delta is the deliverable.
 ## Rules
 
 - Never invent a finding. Every claim names a file, a line or a command output.
+- Never retype the tool's output. Paste it.
+- A score without its band and its standing is a number nobody can act on.
 - Report a dimension you could not assess as not assessed. Do not guess a number.
 - Quote the repository, not your memory of similar repositories.
 - The score belongs to a version. Say which one you audited.

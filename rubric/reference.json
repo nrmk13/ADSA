@@ -1,0 +1,271 @@
+{
+    "note": "Public design systems audited with this rubric, at the commit named. Reproduce with `npx adsa-cli audit <clone>`.",
+    "rubric": "1.0",
+    "measured": "2026-09-10",
+    "systems": [
+        {
+            "name": "Astryx",
+            "org": "Meta",
+            "repo": "facebook/astryx",
+            "commit": "5447429bac",
+            "package": "@astryxdesign/core",
+            "version": "0.5.4",
+            "packageDir": "packages/core",
+            "total": 33,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 3,
+                "machine-surface": 5,
+                "docs-coverage": 3,
+                "docs-freshness": 3,
+                "tokens": 3,
+                "patterns": 5,
+                "a11y": 3,
+                "verification": 5,
+                "gap-handling": 3
+            }
+        },
+        {
+            "name": "Chakra UI",
+            "org": "",
+            "repo": "chakra-ui/chakra-ui",
+            "commit": "67abe9fb80",
+            "package": "@chakra-ui/react",
+            "version": "3.37.0",
+            "packageDir": "packages/react",
+            "total": 29,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 3,
+                "machine-surface": 5,
+                "docs-coverage": 3,
+                "docs-freshness": 3,
+                "tokens": 5,
+                "patterns": 5,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
+            "name": "React Spectrum",
+            "org": "Adobe",
+            "repo": "adobe/react-spectrum",
+            "commit": "4693fcc844",
+            "package": "@react-spectrum/s2",
+            "version": "1.7.1",
+            "packageDir": "packages/@react-spectrum/s2",
+            "total": 25,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 3,
+                "machine-surface": 5,
+                "docs-coverage": 3,
+                "docs-freshness": 3,
+                "tokens": 3,
+                "patterns": 3,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
+            "name": "HeroUI",
+            "org": "",
+            "repo": "heroui-inc/heroui",
+            "commit": "98553cefdc",
+            "package": "@heroui/react",
+            "version": "3.2.4",
+            "packageDir": "packages/react",
+            "total": 23,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 3,
+                "machine-surface": 3,
+                "docs-coverage": 1,
+                "docs-freshness": 1,
+                "tokens": 3,
+                "patterns": 5,
+                "a11y": 3,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
+            "name": "Polaris",
+            "org": "Shopify",
+            "repo": "Shopify/polaris",
+            "commit": "3f7954ae42",
+            "package": "@shopify/polaris",
+            "version": "13.10.1",
+            "packageDir": "polaris-react",
+            "total": 23,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 1,
+                "machine-surface": 3,
+                "docs-coverage": 1,
+                "docs-freshness": 3,
+                "tokens": 5,
+                "patterns": 5,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
+            "name": "Mantine",
+            "org": "",
+            "repo": "mantinedev/mantine",
+            "commit": "61049ecd95",
+            "package": "@mantine/core",
+            "version": "9.6.1",
+            "packageDir": "packages/@mantine/core",
+            "total": 21,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 3,
+                "machine-surface": 3,
+                "docs-coverage": 3,
+                "docs-freshness": 1,
+                "tokens": 3,
+                "patterns": 3,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
+            "name": "shadcn/ui",
+            "org": "",
+            "repo": "shadcn-ui/ui",
+            "commit": "3ba91b1cc8",
+            "package": "v4",
+            "version": "0.1.0",
+            "packageDir": "apps/v4",
+            "total": 21,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 1,
+                "machine-surface": 5,
+                "docs-coverage": 3,
+                "docs-freshness": 3,
+                "tokens": 3,
+                "patterns": 1,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
+            "name": "Base UI",
+            "org": "MUI",
+            "repo": "mui/base-ui",
+            "commit": "9f4551b4cb",
+            "package": "@base-ui/react",
+            "version": "1.8.0",
+            "packageDir": "packages/react",
+            "total": 19,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 1,
+                "machine-surface": 3,
+                "docs-coverage": 1,
+                "docs-freshness": 3,
+                "tokens": 1,
+                "patterns": 5,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
+            "name": "Carbon",
+            "org": "IBM",
+            "repo": "carbon-design-system/carbon",
+            "commit": "12277c649e",
+            "package": "@carbon/react",
+            "version": "1.116.0",
+            "packageDir": "packages/react",
+            "total": 19,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 3,
+                "machine-surface": 3,
+                "docs-coverage": 1,
+                "docs-freshness": 1,
+                "tokens": 3,
+                "patterns": 3,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
+            "name": "Primer",
+            "org": "GitHub",
+            "repo": "primer/react",
+            "commit": "4dc92ecc50",
+            "package": "@primer/react",
+            "version": "38.38.0",
+            "packageDir": "packages/react",
+            "total": 17,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 3,
+                "machine-surface": 5,
+                "docs-coverage": 1,
+                "docs-freshness": 1,
+                "tokens": 1,
+                "patterns": 1,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
+            "name": "Radix Primitives",
+            "org": "WorkOS",
+            "repo": "radix-ui/primitives",
+            "commit": "f7ecd5ab16",
+            "package": "radix-ui",
+            "version": "1.6.7",
+            "packageDir": "packages/react/radix-ui",
+            "total": 13,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 3,
+                "machine-surface": 1,
+                "docs-coverage": 1,
+                "docs-freshness": 1,
+                "tokens": 1,
+                "patterns": 1,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        },
+        {
+            "name": "Untitled UI React",
+            "org": "",
+            "repo": "untitleduico/react",
+            "commit": "c981a73bcd",
+            "package": "@untitledui/react",
+            "version": "0.0.0",
+            "packageDir": ".",
+            "total": 13,
+            "max": 45,
+            "dimensions": {
+                "agent-instructions": 3,
+                "machine-surface": 1,
+                "docs-coverage": 1,
+                "docs-freshness": 1,
+                "tokens": 1,
+                "patterns": 1,
+                "a11y": 1,
+                "verification": 3,
+                "gap-handling": 1
+            }
+        }
+    ]
+}

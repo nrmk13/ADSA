@@ -24,6 +24,17 @@ test/fixtures/      small fixtures: React Native, Swift, Kotlin/Compose, and a p
 The landing page lives in its own repository; every number on it has to be
 reproducible with a command from this README.
 
+`lib/target.mjs` picks the package to audit out of a monorepo, and it ranks candidates
+by how many components each one exports — never by which of them keeps a `docs/`
+folder. Detection reads `registry.json` where a repo ships a registry, and namespace
+re-exports (`export * as Dialog from …`) where it ships an aggregate package.
+
+`lib/badge.mjs` holds the only band table: the terminal, the report, the markdown and
+the badge all call `band()`. The thresholds are anchored to `rubric/reference.json` —
+twelve public design systems audited at a named commit, running 13 to 33 out of 45 —
+so a change to the bands has to argue with that file. Regenerate it only with a run
+over fresh clones, and record the commits.
+
 `scan` reads two roots: the package being audited and, when a monorepo declares that
 package as one of its workspaces, the repository around it. Components, guides and
 tokens are the package's; agent instructions, CI and the agent surface are the
@@ -59,6 +70,7 @@ branches, not by forking the pipeline.
 node --test 'test/*.test.mjs'
 node bin/adsa.mjs audit example/design-system   # must be 23/45 after fixes are applied
 node bin/adsa.mjs audit test/fixtures/monorepo-ds --out /tmp/adsa   # must be 39/45
+node bin/adsa.mjs reference                       # the field, printed from rubric/reference.json
 ```
 
 Check exit codes explicitly. A piped command hides a non-zero exit.

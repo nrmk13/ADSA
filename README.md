@@ -34,13 +34,47 @@ fails when the score drops, so documentation debt cannot land quietly next to a
 feature. `adsa badge` prints the README line for your own score — this is what the
 example system in this repo earns after its fixes:
 
-![Agent-ready 23/45](https://img.shields.io/badge/agent--ready-23%2F45-a2650b)
+![Agent-ready 23/45](https://img.shields.io/badge/agent--ready-23%2F45-a16207)
 
 **The experiment.** `adsa eval` gives an agent a real page to build, then counts what
 it invented. It is the only number that has ever changed anyone's mind.
 
 **An MCP server.** `adsa mcp` serves the guides as tools, so agents query the docs of
 the version checked out in front of them instead of reading files and guessing.
+
+## What a score means
+
+Twelve public design systems, audited with this rubric at the commit named in
+`rubric/reference.json`, on 2026-09-10:
+
+| Score | System | Repository | Package audited |
+| :-- | :-- | :-- | :-- |
+| 33/45 | Astryx · Meta | `facebook/astryx` | `@astryxdesign/core` |
+| 29/45 | Chakra UI | `chakra-ui/chakra-ui` | `@chakra-ui/react` |
+| 25/45 | React Spectrum · Adobe | `adobe/react-spectrum` | `@react-spectrum/s2` |
+| 23/45 | HeroUI | `heroui-inc/heroui` | `@heroui/react` |
+| 23/45 | Polaris · Shopify | `Shopify/polaris` | `@shopify/polaris` |
+| 21/45 | Mantine | `mantinedev/mantine` | `@mantine/core` |
+| 21/45 | shadcn/ui | `shadcn-ui/ui` | `v4` |
+| 19/45 | Base UI · MUI | `mui/base-ui` | `@base-ui/react` |
+| 19/45 | Carbon · IBM | `carbon-design-system/carbon` | `@carbon/react` |
+| 17/45 | Primer · GitHub | `primer/react` | `@primer/react` |
+| 13/45 | Radix Primitives · WorkOS | `radix-ui/primitives` | `radix-ui` |
+| 13/45 | Untitled UI React | `untitleduico/react` | `@untitledui/react` |
+
+Two things follow, and both are the point of publishing this table.
+
+**45 is nobody's score.** The best-documented public design system reaches 33. The
+bands are anchored to that measured field rather than to a wish: **31+ agent-ready**,
+**24–30 good foundation**, **15–23 gaps to address**, **below 15 not ready**. A system
+in the low twenties is in the middle of the field, not failing.
+
+**This is not a ranking of design systems.** It measures one thing: what a coding
+agent can find in the repository it is working in. A system whose documentation lives
+on an excellent website scores low here and may well be the better system for people.
+
+Every row is reproducible: clone the repository and run `npx adsa-cli audit <clone>`.
+`npx adsa-cli reference` prints this table from the tool.
 
 ## The nine dimensions
 

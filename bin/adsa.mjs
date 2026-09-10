@@ -8,16 +8,20 @@
  *   adsa eval init | score <dir>  run the experiment and measure the result
  *   adsa mcp                      serve the guides as MCP tools
  *   adsa doctor                   is this repo wired up for agents
+ *   adsa reference                the field: what other design systems score
  *   adsa badge                    the README badge for the committed score
  */
+import { spawn } from "node:child_process";
 import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { loadConfig, resolveRepoRoot, resolveTarget } from "../lib/config.mjs";
+import { loadConfig, resolveRepoRoot } from "../lib/config.mjs";
+import { resolveTarget } from "../lib/target.mjs";
 import { scan } from "../lib/scan.mjs";
 import { RUBRIC, score, scoreFile } from "../lib/score.mjs";
 import { buildTodo, html, markdown } from "../lib/report.mjs";
-import { badgeEndpoint, badgeMarkdown } from "../lib/badge.mjs";
+import { band, badgeEndpoint, badgeMarkdown } from "../lib/badge.mjs";
+import { REFERENCE, standing } from "../lib/reference.mjs";
 import { exists, isDir } from "../lib/fsx.mjs";
 import { DIR, appendHistory, compare, readHistory, write } from "../lib/history.mjs";
 import { FIXES, applyFix } from "../lib/fix.mjs";
@@ -42,6 +46,7 @@ Usage
   adsa eval score <dir>       Measure what the agent actually built
   adsa mcp                    Serve the guides as MCP tools over stdio
   adsa doctor                 Check this repo's agent surface
+  adsa reference              The measured field: public design systems, same rubric
   adsa badge                  Print the README badge for the committed score
   adsa rubric                 Print the nine dimensions and what each level means
 
@@ -55,6 +60,7 @@ Options
   --cwd <dir>                 fix: the repository to change (default: .)
   --workspace <name>          audit this workspace package, not the detected one
   --no-workspace              audit the given directory as it stands
+  --no-open                   audit: do not open the report in a browser
   --quiet                     Only the score line
   --full                      docs: keep the prose
   --color / --no-color        Force ANSI colour on or off (default: on for a terminal)
@@ -74,6 +80,8 @@ export function parseArgs(argv) {
         else if (arg === "--color") flags.color = true;
         else if (arg === "--no-color") flags.color = false;
         else if (arg === "--all") flags.all = true;
+        else if (arg === "--open") flags.open = true;
+        else if (arg === "--no-open") flags.open = false;
         else if (arg === "--no-workspace") flags.noWorkspace = true;
         else if (arg === "--workspace") flags.workspace = argv[++i];
         else if (arg === "--out") flags.out = argv[++i];
@@ -163,6 +171,8 @@ async function dispatch(command, args, flags, io, out, json) {
             return cmdDocs(args, flags, out, json);
         case "doctor":
             return cmdDoctor(args[0], flags, out, json);
+        case "reference":
+            return cmdReference(flags, out, json);
         case "badge":
             return cmdBadge(args[0], flags, out, json);
         case "rubric":
@@ -184,6 +194,48 @@ function scannedLine(facts) {
     if (facts.monorepo) parts.push(`repo-level files from ${basename(facts.repoRoot)}/`);
     return `  scanned: ${parts.join(" · ")}`;
 }
+
+/**
+ * Whether to hand the report to the reader's browser. Opening a window is the kind of
+ * thing a tool should only do when a person is watching: a TTY, no CI environment
+ * variable, and not asked for machine output.
+ */
+function shouldOpen(flags) {
+    if (flags.open === false || flags.json || flags.quiet || flags.gate) return false;
+    if (flags.open === true) return true;
+    if (process.env.CI || process.env.ADSA_NO_OPEN) return false;
+    return Boolean(process.stdout.isTTY);
+}
+
+function openInBrowser(file, out) {
+    const cmd = process.platform === "darwin" ? "open" : process.platform === "win32" ? "start" : "xdg-open";
+    try {
+        spawn(cmd, [pathToFileURL(file).href], { stdio: "ignore", detached: true, shell: process.platform === "win32" }).unref();
+    } catch {
+        out(dim("  (could not open a browser — the path above is the file)"));
+    }
+}
+
+/* ------------------------------------------------------------ reference */
+
+/** The measured field, so a reader can see what 45 is worth without leaving the terminal. */
+function cmdReference(flags, out, json) {
+    if (flags.json) {
+        json(REFERENCE);
+        return 0;
+    }
+    out(`Public design systems audited with rubric ${REFERENCE.rubric}, ${REFERENCE.measured}:\n`);
+    for (const s of REFERENCE.systems) {
+        const label = `${s.name}${s.org ? ` · ${s.org}` : ""}`;
+        out(`  ${String(s.total).padStart(2)}/${s.max}  ${byScore(bandScore(s.total, s.max), label.padEnd(26))} ${dim(`${s.repo}@${s.commit}  ${s.package}`)}`);
+    }
+    out(dim("\n  Not a ranking of design systems: it measures what an agent can find in the repository."));
+    out(dim("  Reproduce any row with `npx adsa-cli audit <clone>`."));
+    return 0;
+}
+
+/** The 1/3/5 colour the bar chart uses, borrowed for a whole score. */
+const bandScore = (total, max) => ({ ready: 5, good: 5, gaps: 3, unready: 1 })[band(total, max).id];
 
 /* ---------------------------------------------------------------- audit */
 
@@ -208,10 +260,11 @@ function cmdAudit(dir, flags, out, json) {
     if (flags.json) {
         json({ ...file, scanned: facts.scanned, dimensions: scored.dimensions, delta });
     } else {
-        const band = scored.total / scored.max;
-        // Same bands the report uses, so the terminal and the HTML never disagree.
-        const paint = (t) => (band >= 0.85 ? green(t) : band >= 0.35 ? yellow(t) : red(t));
-        out(`${facts.name}${facts.version ? " " + facts.version : ""} — agent readiness ${paint(`${scored.total}/${scored.max}`)}`);
+        // One band table, in lib/badge.mjs, so the terminal, the report and the
+        // badge never disagree about what a number means.
+        const verdict = band(scored.total, scored.max);
+        const paint = (t) => (verdict.id === "ready" || verdict.id === "good" ? green(t) : verdict.id === "gaps" ? yellow(t) : red(t));
+        out(`${facts.name}${facts.version ? " " + facts.version : ""} — agent readiness ${paint(`${scored.total}/${scored.max}`)}  ${paint(verdict.label)}`);
         if (facts.workspace) out(`  ${facts.workspace}`);
         if (!flags.quiet) {
             out(dim(scannedLine(facts)));
@@ -232,6 +285,8 @@ function cmdAudit(dir, flags, out, json) {
                 const move = `Since the last run: ${delta.from} → ${delta.to} (${delta.delta >= 0 ? "+" : ""}${delta.delta})`;
                 out(delta.delta > 0 ? green(move) : delta.delta < 0 ? red(move) : dim(move));
             }
+            // A score out of 45 answers nothing until you know what 45 is worth.
+            out(dim(standing(scored.total).sentence));
         }
     }
 
@@ -246,7 +301,12 @@ function cmdAudit(dir, flags, out, json) {
     const near = relative(process.cwd(), artefacts);
     const shown = !near ? "." : near.startsWith("..") ? artefacts : near;
     if (!flags.json && !flags.quiet) {
-        out(dim(`\nReport: ${join(shown, "report.html")} · score: ${join(shown, "score.json")}`));
+        const report = join(artefacts, "report.html");
+        out(`\nReport: ${pathToFileURL(report).href}`);
+        out(dim(`  ${join(shown, "report.html")} · score: ${join(shown, "score.json")}`));
+        // The report is the deliverable, so it opens. `--no-open` for a script, and
+        // it never opens on its own in CI or when the output is being piped.
+        if (shouldOpen(flags)) openInBrowser(report, out);
         // Say once what the directory is for, rather than leave someone to guess
         // whether a new folder in their repository belongs in the commit.
         if (fresh && !flags.out && exists(join(root, ".git"))) {

@@ -4,14 +4,16 @@ import { join, resolve } from "node:path";
 import { after, describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { loadConfig, resolveRepoRoot, resolveTarget } from "../lib/config.mjs";
+import { loadConfig, resolveRepoRoot } from "../lib/config.mjs";
+import { resolveTarget } from "../lib/target.mjs";
 import { scan } from "../lib/scan.mjs";
 import { RUBRIC, score, scoreFile } from "../lib/score.mjs";
 import { applyFix, FIXES, render, vars } from "../lib/fix.mjs";
 import { dense } from "../lib/dense.mjs";
 import { findGuide, handleMessage, searchGuides, TOOLS } from "../lib/mcp.mjs";
 import { evaluate, taskFile } from "../lib/eval.mjs";
-import { badgeColor, badgeEndpoint, badgeMarkdown } from "../lib/badge.mjs";
+import { band, badgeColor, badgeEndpoint, badgeMarkdown } from "../lib/badge.mjs";
+import { REFERENCE, standing } from "../lib/reference.mjs";
 import { compare } from "../lib/history.mjs";
 import { byScore, detectColor, green, setColor } from "../lib/color.mjs";
 import { html, markdown } from "../lib/report.mjs";
@@ -625,5 +627,213 @@ describe("a design system inside a monorepo", () => {
         assert.equal(await run(["audit", MONOREPO, "--quiet", "--no-color", "--no-workspace", "--out", outDir()], out.io), 0);
         assert.match(out.text(), /^monorepo-ds/);
         assert.doesNotMatch(out.text(), /workspace: audited/);
+    });
+});
+
+/**
+ * Everything here is a shape a real design system ships and the scanner used to read
+ * as absence. Each case is one repository from the reference set, reduced to the
+ * detail that broke it.
+ */
+describe("finding the design system in somebody else's repository", () => {
+    function repo(files) {
+        const root = mkdtempSync(join(tmpdir(), "adsa-find-"));
+        temps.push(root);
+        for (const [path, body] of Object.entries(files)) {
+            const full = join(root, path);
+            mkdirSync(join(full, ".."), { recursive: true });
+            writeFileSync(full, typeof body === "string" ? body : JSON.stringify(body, null, 2));
+        }
+        return root;
+    }
+
+    const component = (name) => `export function ${name}(props) {\n  return <div />;\n}\n`;
+
+    it("expands a nested workspace glob, so a scope folder is not mistaken for a package", () => {
+        const root = repo({
+            "package.json": { name: "mono", private: true, workspaces: ["packages/**/*"] },
+            "packages/@acme/core/package.json": { name: "@acme/core" },
+            "packages/@acme/core/src/Button.tsx": component("Button"),
+            "packages/@acme/core/src/Card.tsx": component("Card"),
+        });
+        const target = resolveTarget(root);
+        assert.equal(target.dir, join(root, "packages/@acme/core"));
+    });
+
+    it("reads the pnpm packages block past a comment between two globs", () => {
+        const root = repo({
+            "package.json": { name: "mono", private: true },
+            "pnpm-workspace.yaml": "packages:\n  - 'apps/*'\n  # the components live here\n  - 'packages/*'\n\nnodeLinker: hoisted\n",
+            "packages/ui/package.json": { name: "@acme/ui" },
+            "packages/ui/src/Button.tsx": component("Button"),
+        });
+        assert.equal(resolveTarget(root).dir, join(root, "packages/ui"));
+    });
+
+    it("ranks by components, not by whichever package keeps a docs folder", () => {
+        const root = repo({
+            "package.json": { name: "mono", private: true, workspaces: ["packages/*"] },
+            "packages/codemod/package.json": { name: "@acme/codemod" },
+            "packages/codemod/src/run.ts": "export const run = () => {};\n",
+            "packages/codemod/docs/v2.md": "# Migrating\n",
+            "packages/codemod/docs/v3.md": "# Migrating again\n",
+            "packages/ui/package.json": { name: "@acme/ui" },
+            "packages/ui/src/Button.tsx": component("Button"),
+            "packages/ui/src/Card.tsx": component("Card"),
+        });
+        const target = resolveTarget(root);
+        assert.equal(target.dir, join(root, "packages/ui"));
+        assert.match(target.note, /2 components/);
+    });
+
+    it('treats "private": "true", the string, as private', () => {
+        const root = repo({
+            "package.json": { name: "mono", private: true, workspaces: ["*"] },
+            "showcase/package.json": { name: "@acme/showcase", private: "true" },
+            "showcase/src/Big.tsx": component("Big") + component("Bigger") + component("Biggest"),
+            "ui/package.json": { name: "@acme/ui" },
+            "ui/src/Button.tsx": component("Button"),
+        });
+        assert.equal(resolveTarget(root).dir, join(root, "ui"));
+    });
+
+    it("falls back to a private workspace when no published one has components", () => {
+        const root = repo({
+            "package.json": { name: "mono", private: true, workspaces: ["*"] },
+            "cli/package.json": { name: "@acme/cli" },
+            "site/package.json": { name: "site", private: true },
+            "site/src/Button.tsx": component("Button"),
+            "site/src/Card.tsx": component("Card"),
+        });
+        assert.equal(resolveTarget(root).dir, join(root, "site"));
+    });
+
+    it("counts the components a registry declares, and not its blocks or examples", () => {
+        const root = repo({
+            "package.json": { name: "site", private: true },
+            "registry.json": {
+                items: [
+                    ...["button", "card", "dialog", "input", "select"].map((name) => ({ name, type: "registry:ui" })),
+                    { name: "dashboard-01", type: "registry:block" },
+                    { name: "button-demo", type: "registry:example" },
+                ],
+            },
+            "registry/ui/button.tsx": component("Button"),
+            "components/site-header.tsx": component("SiteHeader"),
+        });
+        const { facts } = load(root);
+        assert.deepEqual(
+            facts.components.map((c) => c.slug),
+            ["button", "card", "dialog", "input", "select"],
+        );
+    });
+
+    it("counts the namespace re-exports an aggregate package publishes", () => {
+        const root = repo({
+            "package.json": { name: "@acme/all" },
+            "src/index.ts": 'export * as Dialog from "@acme/react-dialog";\nexport * as Tabs from "@acme/react-tabs";\n',
+        });
+        const { facts } = load(root);
+        assert.deepEqual(facts.components.map((c) => c.name).sort(), ["Dialog", "Tabs"]);
+    });
+
+    it("finds the documentation site by the component names in it, wherever it is", () => {
+        const root = repo({
+            "package.json": { name: "mono", private: true, workspaces: ["packages/*", "apps/*"] },
+            "packages/ui/package.json": { name: "@acme/ui" },
+            "packages/ui/src/Button.tsx": component("Button"),
+            "packages/ui/src/Card.tsx": component("Card"),
+            "packages/ui/src/Field.tsx": component("Field"),
+            "apps/www/package.json": { name: "www", private: true },
+            "apps/www/content/docs/components/button/page.mdx": "# Button\n\nUse it.\n",
+            "apps/www/content/docs/components/card/page.mdx": "# Card\n\nUse it.\n",
+            "apps/www/content/docs/components/field/page.mdx": "# Field\n\nUse it.\n",
+            "apps/www/content/docs/theming/tokens.mdx": "# Tokens\n",
+            "apps/www/content/blog/hello.mdx": "# Hello\n",
+        });
+        const { facts } = load(root);
+        assert.equal(facts.coverage.documented, 3, "the guides are named after the components");
+        assert.ok(
+            facts.guides.some((g) => g.slug === "tokens"),
+            "the whole documentation tree is read, not only the component folder",
+        );
+        assert.ok(!facts.guides.some((g) => /blog/.test(g.path)), "a blog post is not a guide");
+    });
+
+    it("does not read a relative import in a documentation page as a missing export", () => {
+        const root = repo({
+            "package.json": { name: "@acme/ui" },
+            "src/Button.tsx": component("Button"),
+            "docs/components/button.md": '# Button\n\n```tsx\nimport { MyForm } from "./my-form";\nimport { Button } from "@acme/ui";\n```\n',
+        });
+        const { facts } = load(root);
+        assert.equal(facts.freshness.unknownCount, 0);
+    });
+
+    it("reads a rendered prop table as generated, because it is", () => {
+        const root = repo({
+            "package.json": { name: "@acme/ui" },
+            "src/Button.tsx": component("Button"),
+            "docs/components/button.md": '# Button\n\n<PropTable component="Button" />\n',
+        });
+        const { facts } = load(root);
+        assert.equal(facts.freshness.guidesWithPropTable, 1);
+        assert.equal(facts.freshness.guidesGenerated, 1);
+    });
+});
+
+describe("what a score means", () => {
+    const capture = () => {
+        let text = "";
+        return { io: { stdout: { write: (s) => (text += s) } }, text: () => text };
+    };
+    const outDir = () => {
+        const dir = mkdtempSync(join(tmpdir(), "adsa-out-"));
+        temps.push(dir);
+        return dir;
+    };
+
+    it("bands are anchored to the measured field, and 45 is nobody's score", () => {
+        assert.equal(band(33, 45).id, "ready", "the best public system measured is agent-ready");
+        assert.equal(band(31, 45).id, "ready");
+        assert.equal(band(30, 45).id, "good");
+        assert.equal(band(24, 45).id, "good");
+        assert.equal(band(23, 45).id, "gaps");
+        assert.equal(band(15, 45).id, "gaps");
+        assert.equal(band(14, 45).id, "unready");
+        assert.equal(band(0, 45).id, "unready");
+    });
+
+    it("the reference set is complete, ordered, and every row names the commit it was read at", () => {
+        assert.ok(REFERENCE.systems.length >= 10);
+        const ids = RUBRIC.dimensions.map((d) => d.id);
+        for (const s of REFERENCE.systems) {
+            assert.match(s.repo, /^[\w.-]+\/[\w.-]+$/, `${s.name} names a repository`);
+            assert.match(s.commit, /^[0-9a-f]{10}$/, `${s.name} names a commit`);
+            assert.ok(s.total > 0 && s.total <= s.max);
+            assert.deepEqual(Object.keys(s.dimensions), ids, `${s.name} carries every dimension`);
+        }
+        const totals = REFERENCE.systems.map((s) => s.total);
+        assert.deepEqual(totals, [...totals].sort((a, b) => b - a), "highest first");
+    });
+
+    it("standing says where a score sits without claiming a rank", () => {
+        assert.match(standing(45).sentence, /at or above/);
+        assert.match(standing(19).sentence, /sits above \d+ of the \d+/);
+    });
+
+    it("the terminal prints the band, the standing and a link to the report", async () => {
+        const out = capture();
+        assert.equal(await run(["audit", EXAMPLE, "--no-color", "--no-open", "--out", outDir()], out.io), 0);
+        assert.match(out.text(), /agent readiness 23\/45\s+gaps to address/);
+        assert.match(out.text(), /public design systems measured with this rubric/);
+        assert.match(out.text(), /Report: file:\/\/\//);
+    });
+
+    it("prints the field on request", async () => {
+        const out = capture();
+        assert.equal(await run(["reference", "--no-color"], out.io), 0);
+        assert.match(out.text(), /Astryx/);
+        assert.match(out.text(), /Not a ranking of design systems/);
     });
 });
